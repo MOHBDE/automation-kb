@@ -755,7 +755,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.19.0";
+const APP_VERSION = "1.20.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1636,9 +1636,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     try{
       const r=await fetch(sysBase+"?select=name&order=name.asc", {headers:dataHeaders(token)});
       if(!r.ok) return; // tabell ej uppsatt än → behåll lokal lista
-      const rows=await r.json(); let names=rows.map(x=>x.name).filter(Boolean);
-      const local=loadSysList(); const missing=local.filter(n=>n&&!names.includes(n));
-      if(missing.length){ try{ await fetch(sysBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify(missing.map(n=>({name:n})))}); names=names.concat(missing); }catch(e){} }
+      const rows=await r.json(); const names=rows.map(x=>x.name).filter(Boolean);
       setCustomSys(names); saveSysList(names);
     }catch(e){}
   })(); },[token]);
@@ -1652,9 +1650,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     try{
       const r=await fetch(catBase+"?select=name&order=name.asc", {headers:dataHeaders(token)});
       if(!r.ok) return;
-      const rows=await r.json(); let names=rows.map(x=>x.name).filter(Boolean);
-      const local=loadCatList(); const missing=local.filter(n=>n&&!names.includes(n));
-      if(missing.length){ try{ await fetch(catBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify(missing.map(n=>({name:n})))}); names=names.concat(missing); }catch(e){} }
+      const rows=await r.json(); const names=rows.map(x=>x.name).filter(Boolean);
       setCustomCat(names); saveCatList(names);
     }catch(e){}
   })(); },[token]);
