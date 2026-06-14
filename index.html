@@ -756,7 +756,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.27.0";
+const APP_VERSION = "1.28.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -911,16 +911,18 @@ async function enablePush(token, uid){
   let perm;
   try{ perm = await Notification.requestPermission(); }catch(e){ throw new Error("Steg lov: "+(e.message||e)); }
   if(perm!=="granted") throw new Error("Lov nekades (status: "+perm+")");
-  let reg;
-  try{
-    reg = await Promise.race([
-      navigator.serviceWorker.ready,
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), 6000))
-    ]);
-  }catch(e){
-    try{ reg = await navigator.serviceWorker.getRegistration(); }catch(e2){}
-    if(!reg) throw new Error("Steg SW: service worker blev aldrig aktiv. Ta bort appen från hemskärmen och lägg till den igen.");
+  let reg = null;
+  try{ reg = await navigator.serviceWorker.getRegistration(); }catch(e){}
+  if(!reg){
+    try{ reg = await navigator.serviceWorker.register("sw.js"); }
+    catch(e){ throw new Error("Steg SW-reg: "+(e.message||e)); }
   }
+  const swStart = Date.now();
+  while(reg && !reg.active && (Date.now()-swStart) < 12000){
+    await new Promise(r=>setTimeout(r, 400));
+    try{ reg = (await navigator.serviceWorker.getRegistration()) || reg; }catch(e){}
+  }
+  if(!reg || !reg.active){ throw new Error("Steg SW: blev inte aktiv. Stäng appen helt (svep upp), öppna igen, vänta 5 sek och försök igen."); }
   let sub;
   try{
     const old = await reg.pushManager.getSubscription();
