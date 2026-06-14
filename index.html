@@ -743,6 +743,32 @@
   }
   body.contrast .card,body.contrast .panel,body.contrast .compactlist{border-width:1.5px;}
   body.contrast .topbar,body.contrast .nav{background:#ffffff;}
+  /* Falt-lage: stora trafftor for anvandning ute vid station */
+  body.field button:not(.navbtn):not(.x):not(.more):not(.chat-send):not(.chat-attach):not(.cl-item),
+  body.field .foot-mini,body.field .chip,body.field .seg .segbtn{min-height:52px;}
+  body.field input,body.field textarea,body.field select{min-height:52px;font-size:16px;}
+  body.field .chat-send,body.field .chat-attach{width:50px;height:50px;}
+  body.field .card{padding:18px;}
+  body.field .chip{padding:11px 16px;}
+  .larm-search{display:flex;align-items:center;gap:10px;background:var(--inset);border:1px solid var(--line-strong);border-radius:12px;padding:11px 14px;margin-bottom:14px;}
+  .larm-search svg{width:18px;height:18px;color:var(--dim);flex-shrink:0;}
+  .larm-search input{flex:1;border:none;background:transparent;color:var(--txt);font-family:var(--sans);font-size:15px;outline:none;}
+  .larm-form{background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;padding:14px;margin-bottom:16px;display:flex;flex-direction:column;gap:9px;}
+  .larm-form input,.larm-form textarea{width:100%;background:var(--inset);border:1px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--txt);font-family:var(--sans);font-size:14px;}
+  .larm-frow{display:flex;gap:9px;}
+  .larm-frow input{flex:1;min-width:0;}
+  .larm-fact{display:flex;justify-content:flex-end;gap:9px;margin-top:3px;}
+  .btn-ghost{background:var(--inset);border:1px solid var(--line);color:var(--txt2);border-radius:10px;padding:10px 16px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;}
+  .larm-list{display:flex;flex-direction:column;gap:11px;}
+  .larm-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 15px;}
+  .larm-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+  .larm-code{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid var(--line-strong);border-radius:8px;padding:4px 10px;}
+  .larm-sys{font-family:var(--mono);font-size:11px;color:var(--txt2);background:var(--inset);border:1px solid var(--line);border-radius:7px;padding:3px 9px;text-transform:uppercase;letter-spacing:.04em;}
+  .larm-acts{margin-left:auto;display:flex;gap:4px;}
+  .larm-title{font-size:15px;font-weight:600;color:var(--txt);margin-top:9px;}
+  .larm-field{display:flex;flex-direction:column;gap:1px;margin-top:9px;}
+  .larm-field b{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-weight:600;}
+  .larm-field span{font-size:14px;color:var(--txt2);line-height:1.5;}
   /* Offline package */
   .offline-pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-family:var(--mono);color:#34d399;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:6px;padding:2px 7px;}
   .offline-pill svg{width:11px;height:11px;}
@@ -772,7 +798,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.30.0";
+const APP_VERSION = "1.31.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -901,6 +927,7 @@ async function uploadFile(token, uid, file){
 }
 const verBase = SUPABASE_URL + "/rest/v1/entry_versions";
 const msgBase = SUPABASE_URL + "/rest/v1/messages";
+const alarmBase = SUPABASE_URL + "/rest/v1/alarm_codes";
 const commentsBase = SUPABASE_URL + "/rest/v1/comments";
 async function listComments(token, entryId){
   const r = await fetch(commentsBase + "?entry_id=eq." + entryId + "&select=*&order=created_at.asc", {headers: dataHeaders(token)});
@@ -1206,6 +1233,7 @@ function App(){
   const [theme, setTheme] = useState(()=>{ try{ return localStorage.getItem("scada-theme")||"dark"; }catch(e){ return "dark"; } });
   const [bigText, setBigText] = useState(()=>{ try{ return localStorage.getItem("scada-bigtext")==="1"; }catch(e){ return false; } });
   const [contrast, setContrast] = useState(()=>{ try{ return localStorage.getItem("scada-contrast")==="1"; }catch(e){ return false; } });
+  const [fieldMode, setFieldMode] = useState(()=>{ try{ return localStorage.getItem("scada-field")==="1"; }catch(e){ return false; } });
   useEffect(()=>{
     document.body.classList.toggle("light", theme==="light");
     try{ localStorage.setItem("scada-theme", theme); }catch(e){}
@@ -1213,8 +1241,10 @@ function App(){
   },[theme]);
   useEffect(()=>{ document.body.classList.toggle("bigtext", bigText); try{ localStorage.setItem("scada-bigtext", bigText?"1":"0"); }catch(e){} },[bigText]);
   useEffect(()=>{ document.body.classList.toggle("contrast", contrast); try{ localStorage.setItem("scada-contrast", contrast?"1":"0"); }catch(e){} },[contrast]);
+  useEffect(()=>{ document.body.classList.toggle("field", fieldMode); try{ localStorage.setItem("scada-field", fieldMode?"1":"0"); }catch(e){} },[fieldMode]);
   const toggleBig=()=>setBigText(v=>!v);
   const toggleContrast=()=>setContrast(v=>!v);
+  const toggleField=()=>{ const nv=!fieldMode; setFieldMode(nv); setContrast(nv); setBigText(nv); };
   const toggleTheme=()=>setTheme(t=>t==="light"?"dark":"light");
 
   async function afterLogin(d){
@@ -1294,7 +1324,7 @@ function App(){
   else if (profile===undefined) view = (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
   else if (profile && !profile.approved && !profile._legacy) view = <Pending email={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />;
   else if (profile && !profile.org_id && !profile._legacy) view = <OrgOnboarding token={token} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} onDone={async()=>{ setProfile(undefined); try{ setProfile(await getMyProfile(token, uid, user, name)); }catch(e){ setProfile({approved:true,is_admin:false,_legacy:true}); } }} />;
-  else view = <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} bigText={bigText} onToggleBig={toggleBig} contrast={contrast} onToggleContrast={toggleContrast} onLogout={logout} />;
+  else view = <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} bigText={bigText} onToggleBig={toggleBig} contrast={contrast} onToggleContrast={toggleContrast} fieldMode={fieldMode} onToggleField={toggleField} onLogout={logout} />;
   return (<>{updateReady && <div className="update-bar"><span>{Ico.spark} Ny version finns</span><button onClick={applyUpdate}>Uppdatera</button></div>}{view}</>);
 }
 
@@ -1401,7 +1431,60 @@ function Login({onLogin,theme,onToggleTheme}){
   );
 }
 
-function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigText, onToggleBig, contrast, onToggleContrast, onLogout}){
+function LarmView({alarms, onSave, onDelete}){
+  const [q,setQ]=useState("");
+  const [form,setForm]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const list=useMemo(()=>{
+    const arr=alarms.slice().sort((a,b)=>(a.code||"").localeCompare(b.code||"","sv",{numeric:true}));
+    const s=q.trim().toLowerCase();
+    if(!s) return arr;
+    return arr.filter(a=>[a.code,a.title,a.cause,a.action,a.system].some(v=>(v||"").toLowerCase().indexOf(s)>=0));
+  },[alarms,q]);
+  async function submit(){
+    if(!(form.code||"").trim() && !(form.title||"").trim()){ alert("Fyll i minst larmkod eller rubrik."); return; }
+    setBusy(true); try{ await onSave(form); setForm(null); }catch(e){ alert(e.message||"Kunde inte spara"); } setBusy(false);
+  }
+  return (
+    <div>
+      <div className="welcome">
+        <div><h2 className="page-title">Larm-uppslag</h2><p className="page-sub">Sök larmkod → orsak → åtgärd</p></div>
+        <div className="quickadd"><button className="qbtn" onClick={()=>setForm({code:"",title:"",cause:"",action:"",system:""})}>{Ico.add} Ny larmkod</button></div>
+      </div>
+      <div className="larm-search">{Ico.search}<input value={q} onChange={e=>setQ(e.target.value)} placeholder="Sök kod, larm, orsak, åtgärd…" /></div>
+      {form && <div className="larm-form">
+        <div className="larm-frow">
+          <input placeholder="Larmkod, t.ex. AL-204" value={form.code} onChange={e=>setForm({...form,code:e.target.value})} />
+          <input placeholder="System (valfritt)" value={form.system} onChange={e=>setForm({...form,system:e.target.value})} />
+        </div>
+        <input placeholder="Rubrik – vad larmet betyder" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} />
+        <textarea rows={2} placeholder="Trolig orsak" value={form.cause} onChange={e=>setForm({...form,cause:e.target.value})} />
+        <textarea rows={2} placeholder="Åtgärd / vad man gör" value={form.action} onChange={e=>setForm({...form,action:e.target.value})} />
+        <div className="larm-fact">
+          <button className="btn-ghost" onClick={()=>setForm(null)}>Avbryt</button>
+          <button className="btn-amber" disabled={busy} onClick={submit}>{Ico.save} {form.id?"Spara ändring":"Spara"}</button>
+        </div>
+      </div>}
+      {list.length===0
+        ? <div className="empty"><div className="empty-icon">{Ico.bell}</div><div>{q?"Inga träffar.":"Inga larmkoder än. Lägg till den första."}</div></div>
+        : <div className="larm-list">{list.map(a=>(
+            <div className="larm-card" key={a.id}>
+              <div className="larm-top">
+                <span className="larm-code">{a.code||"—"}</span>
+                {a.system && <span className="larm-sys">{a.system}</span>}
+                <span className="larm-acts">
+                  <button className="ibtn" title="Redigera" onClick={()=>setForm(a)}>{Ico.edit}</button>
+                  <button className="ibtn" title="Ta bort" onClick={()=>{ if(confirm("Ta bort larmkod "+(a.code||"")+"?")) onDelete(a.id); }}>{Ico.trash}</button>
+                </span>
+              </div>
+              {a.title && <div className="larm-title">{a.title}</div>}
+              {a.cause && <div className="larm-field"><b>Orsak</b><span>{a.cause}</span></div>}
+              {a.action && <div className="larm-field"><b>Åtgärd</b><span>{a.action}</span></div>}
+            </div>))}</div>}
+    </div>
+  );
+}
+function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigText, onToggleBig, contrast, onToggleContrast, fieldMode, onToggleField, onLogout}){
   const display = (name && name.trim()) ? name.trim() : (user||"").split("@")[0];
   const [entries,setEntries]=useState([]);
   const [trash,setTrash]=useState([]);
@@ -1685,6 +1768,26 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     try{ await fetch(stationGeoBase+"?on_conflict=org_id,name", {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=merge-duplicates"}, body:JSON.stringify([{name,lat,lng,updated_at:new Date().toISOString()}])}); }catch(e){}
     flash("Position sparad för "+name);
   }
+  const [alarms,setAlarms]=useState([]);
+  useEffect(()=>{ if(!token) return; (async()=>{
+    try{ const r=await fetch(alarmBase+"?select=*&order=code.asc",{headers:dataHeaders(token)}); if(!r.ok) return; setAlarms(await r.json()); }catch(e){}
+  })(); },[token]);
+  async function saveAlarm(row){
+    const body={ code:(row.code||"").trim(), title:(row.title||"").trim(), cause:(row.cause||"").trim(), action:(row.action||"").trim(), system:(row.system||"").trim() };
+    if(row.id){
+      const r=await fetch(alarmBase+"?id=eq."+row.id,{method:"PATCH",headers:{...dataHeaders(token),Prefer:"return=representation"},body:JSON.stringify(body)});
+      if(!r.ok) throw new Error("Kunde inte spara ("+r.status+")");
+      const upd=(await r.json())[0]; setAlarms(x=>x.map(a=>a.id===row.id?upd:a));
+    } else {
+      const r=await fetch(alarmBase,{method:"POST",headers:{...dataHeaders(token),Prefer:"return=representation"},body:JSON.stringify([body])});
+      if(!r.ok) throw new Error("Kunde inte spara ("+r.status+")");
+      const ins=(await r.json())[0]; setAlarms(x=>[...x,ins]);
+    }
+  }
+  async function deleteAlarm(id){
+    setAlarms(x=>x.filter(a=>a.id!==id));
+    try{ await fetch(alarmBase+"?id=eq."+id,{method:"DELETE",headers:dataHeaders(token)}); }catch(e){}
+  }
   const sysScope=useMemo(()=>activeSystem==="Alla"?entries:entries.filter(e=>(e.system||"Ignition")===activeSystem),[entries,activeSystem]);
   const counts=useMemo(()=>{const c={}; sysScope.forEach(e=>c[e.category]=(c[e.category]||0)+1); return c;},[sysScope]);
   const sysCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.system||"Ignition"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
@@ -1753,7 +1856,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
           <div className="topbar-user">{Ico.users}<span className="topbar-email">{display}</span></div>
           <div className="topbar-actions">
             {!online&&<span className="offline-badge"><span className="offline-dot"></span>Offline</span>}
-            <HeaderMenu theme={theme} onToggleTheme={onToggleTheme} bigText={bigText} onToggleBig={onToggleBig} contrast={contrast} onToggleContrast={onToggleContrast} onExport={exportData} onImport={()=>fileRef.current.click()} onUsers={()=>setShowUsers(true)} />
+            <HeaderMenu theme={theme} onToggleTheme={onToggleTheme} bigText={bigText} onToggleBig={onToggleBig} contrast={contrast} onToggleContrast={onToggleContrast} fieldMode={fieldMode} onToggleField={onToggleField} onExport={exportData} onImport={()=>fileRef.current.click()} onUsers={()=>setShowUsers(true)} />
             <button className="hbtn hbtn-trash" title="Papperskorg" onClick={()=>setShowTrash(true)}>{Ico.trash}{trash.length>0 && <span className="hbtn-badge">{trash.length}</span>}</button>
             <button className="hbtn" title="Logga ut" onClick={onLogout}>{Ico.out}</button>
           </div>
@@ -1769,9 +1872,11 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
             onOpenLibrary={cat=>{setActiveCat(cat||"Alla");setActiveSystem("Alla");setSearch("");setActiveView("bibliotek");}}
             onAdd={()=>setEditing({})} onQuickAdd={isCode=>setEditing({is_code:isCode})}
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
-            onOpen={openDetail} loadExamples={loadExamples} />
+            onOpen={openDetail} loadExamples={loadExamples} onOpenLarm={()=>setActiveView("larm")} alarmCount={alarms.length} />
         ) : activeView==="chatt" ? (
           <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} />
+        ) : activeView==="larm" ? (
+          <LarmView alarms={alarms} onSave={saveAlarm} onDelete={deleteAlarm} />
         ) : (
           <>
             <div className="page-head">
@@ -1897,7 +2002,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   );
 }
 
-function HeaderMenu({theme,onToggleTheme,bigText,onToggleBig,contrast,onToggleContrast,onExport,onImport,onUsers}){
+function HeaderMenu({theme,onToggleTheme,bigText,onToggleBig,contrast,onToggleContrast,fieldMode,onToggleField,onExport,onImport,onUsers}){
   const [open,setOpen]=useState(false);
   return (
     <div className="hmenu-wrap">
@@ -1909,6 +2014,7 @@ function HeaderMenu({theme,onToggleTheme,bigText,onToggleBig,contrast,onToggleCo
           <button className="hmenu-item" onClick={onToggleTheme}><span className="hmenu-ic">{theme==="light"?Ico.moon:Ico.sun}</span><span>{theme==="light"?"Mörkt läge":"Ljust läge"}</span></button>
           <button className={"hmenu-item"+(bigText?" on":"")} onClick={onToggleBig}><span className="hmenu-ic hmenu-aa">A</span><span>Större text</span>{bigText&&<span className="hmenu-check">{Ico.check}</span>}</button>
           <button className={"hmenu-item"+(contrast?" on":"")} onClick={onToggleContrast}><span className="hmenu-ic">{Ico.contrast}</span><span>Hög kontrast</span>{contrast&&<span className="hmenu-check">{Ico.check}</span>}</button>
+          <button className={"hmenu-item"+(fieldMode?" on":"")} onClick={onToggleField}><span className="hmenu-ic">{Ico.pin}</span><span>Fält-läge (ute vid station)</span>{fieldMode&&<span className="hmenu-check">{Ico.check}</span>}</button>
           <div className="hmenu-div"></div>
           <div className="hmenu-sec">Data &amp; konto</div>
           <button className="hmenu-item" onClick={()=>{onExport();setOpen(false);}}><span className="hmenu-ic">{Ico.down}</span><span>Exportera backup</span></button>
@@ -2009,7 +2115,7 @@ function WhatsNew({entries, uid, onOpen}){
   );
 }
 
-function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,recentOpened=[],favCount=0,onOpenFavorites,stationPoints=[],onPickStation,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples}){
+function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pinnedCount,loading,user,uid,recentOpened=[],favCount=0,onOpenFavorites,stationPoints=[],onPickStation,onOpenLibrary,onAdd,onQuickAdd,onTag,onOpen,loadExamples,onOpenLarm,alarmCount=0}){
   if(loading) return <div className="empty"><div className="spin" style={{display:"inline-block"}}>{Ico.db}</div><div>Laddar…</div></div>;
   if(entries.length===0) return (
     <div className="empty">
@@ -2043,6 +2149,7 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
         <Tile icon={Ico.terminal} label="Kod" value={codeCount} color="#a78bfa" onClick={()=>onOpenLibrary()} />
         <Tile icon={Ico.note} label="Anteckningar" value={noteCount} color="#60a5fa" onClick={()=>onOpenLibrary()} />
         <Tile icon={Ico.star} label="Favoriter" value={favCount} color="#fbbf24" onClick={()=>onOpenFavorites&&onOpenFavorites()} />
+        <Tile icon={Ico.bell} label="Larm-uppslag" value={alarmCount} color="#f87171" onClick={()=>onOpenLarm&&onOpenLarm()} />
       </div>
       <ActivityChart entries={entries} />
       {stationPoints.length>0 && (
