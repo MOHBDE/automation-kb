@@ -582,6 +582,22 @@
   .chat-send svg{width:19px;height:19px;}
   .chat-send:not(:disabled):hover{transform:scale(1.06);}
   .chat-send:disabled{opacity:.4;cursor:default;}
+  .att-wrap{position:relative;flex-shrink:0;}
+  .chat-attach{flex-shrink:0;width:42px;height:42px;border-radius:50%;border:1px solid var(--line-strong);background:var(--inset);color:var(--txt2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;line-height:1;}
+  .chat-attach:not(:disabled):hover{color:var(--txt);border-color:var(--accent);}
+  .chat-attach svg{width:20px;height:20px;}
+  .att-menu{position:absolute;bottom:52px;left:0;background:var(--panel2);border:1px solid var(--line-strong);border-radius:13px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 14px 36px rgba(0,0,0,.45);z-index:40;min-width:158px;}
+  .att-menu button{display:flex;align-items:center;gap:11px;padding:11px 13px;border:none;background:transparent;color:var(--txt);font-family:var(--sans);font-size:14px;border-radius:9px;cursor:pointer;text-align:left;width:100%;}
+  .att-menu button:hover{background:var(--inset);}
+  .att-menu button svg{width:18px;height:18px;color:var(--accent);}
+  .att-img{display:block;max-width:220px;border-radius:13px;overflow:hidden;margin-bottom:5px;}
+  .att-img img{display:block;width:100%;height:auto;}
+  .att-loc,.att-file{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:12px;background:var(--inset);border:1px solid var(--line);color:var(--txt);text-decoration:none;margin-bottom:5px;max-width:250px;}
+  .att-loc svg,.att-file svg{width:22px;height:22px;flex-shrink:0;color:var(--accent);}
+  .att-loc span,.att-file span{display:flex;flex-direction:column;min-width:0;}
+  .att-loc b,.att-file b{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .att-loc small,.att-file small{font-size:11.5px;color:var(--dim);margin-top:1px;}
+  .bubble.me .att-loc,.bubble.me .att-file{background:rgba(0,0,0,.18);border-color:rgba(0,0,0,.18);}
   @media(max-width:860px){
     .chat2{grid-template-columns:1fr;height:calc(100dvh - 150px);border:none;border-radius:0;background:none;box-shadow:none;}
     .chat2-list{border-right:none;background:none;}
@@ -756,7 +772,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.28.0";
+const APP_VERSION = "1.29.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -990,13 +1006,33 @@ async function sendMessageRow(token, row){
   if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte skicka ("+r.status+")")); }
   return (await r.json())[0];
 }
+const CHAT_BUCKET = "chat-files";
+async function uploadChatFile(token, file){
+  const safe = (file.name||"fil").replace(/[^a-zA-Z0-9._-]/g,"_").slice(-60);
+  const path = (Date.now().toString(36)) + "-" + Math.random().toString(36).slice(2,8) + "-" + safe;
+  const r = await fetch(SUPABASE_URL + "/storage/v1/object/" + CHAT_BUCKET + "/" + encodeURIComponent(path), {
+    method:"POST",
+    headers:{ apikey:SUPABASE_KEY, Authorization:"Bearer "+token, "Content-Type": file.type||"application/octet-stream", "x-upsert":"true" },
+    body:file
+  });
+  if(!r.ok){ let t=""; try{ t=await r.text(); }catch(e){} throw new Error("Uppladdning misslyckades ("+r.status+"): "+t.slice(0,120)); }
+  return SUPABASE_URL + "/storage/v1/object/public/" + CHAT_BUCKET + "/" + encodeURIComponent(path);
+}
+function attachPreview(m){
+  const a=(m.attachments||[])[0];
+  if(!a) return m.body||"";
+  if(a.type==="image") return "📷 Bild";
+  if(a.type==="location") return "📍 Plats";
+  return "📎 " + (a.name||"Fil");
+}
+function fmtBytes(n){ if(!n&&n!==0) return ""; if(n<1024) return n+" B"; if(n<1048576) return (n/1024).toFixed(0)+" kB"; return (n/1048576).toFixed(1)+" MB"; }
 async function fetchChatOverview(token, me){
   const q="or=(sender_id.eq."+me+",recipient_id.eq."+me+",recipient_id.is.null)";
-  const r = await fetch(msgBase + "?" + q + "&select=sender_id,recipient_id,body,created_at&order=created_at.desc&limit=200", {headers: dataHeaders(token)});
+  const r = await fetch(msgBase + "?" + q + "&select=sender_id,recipient_id,body,attachments,created_at&order=created_at.desc&limit=200", {headers: dataHeaders(token)});
   if(!r.ok) return {};
   let rows=[]; try{ rows=await r.json(); }catch(e){ return {}; }
   const ov={};
-  rows.forEach(m=>{ const key=m.recipient_id==null?"team":(m.sender_id===me?m.recipient_id:m.sender_id); if(!ov[key]) ov[key]={body:m.body,at:m.created_at,fromMe:m.sender_id===me}; });
+  rows.forEach(m=>{ const key=m.recipient_id==null?"team":(m.sender_id===me?m.recipient_id:m.sender_id); if(!ov[key]) ov[key]={body:attachPreview(m),at:m.created_at,fromMe:m.sender_id===me}; });
   return ov;
 }
 async function listVersions(token, entryId){
@@ -2289,6 +2325,10 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   const [text,setText]=useState("");
   const [loading,setLoading]=useState(true);
   const [sending,setSending]=useState(false);
+  const [attaching,setAttaching]=useState(false);
+  const [attachMenu,setAttachMenu]=useState(false);
+  const imgInputRef=useRef(null);
+  const fileInputRef=useRef(null);
   const [search,setSearch]=useState("");
   const [mobileThread,setMobileThread]=useState(false);
   const [overview,setOverview]=useState({});
@@ -2337,12 +2377,41 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   })();
 
   async function send(){
-    const b=text.trim(); if(!b||sending) return;
+    const b=text.trim(); if((!b&&!attaching)||sending) return;
     setSending(true);
     const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:b };
     try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); rememberConv(conv); setOverview(o=>({...o,[conv]:{body:b,at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}})); }
     catch(e){ alert(e.message); }
     setSending(false);
+  }
+  async function sendAttachment(att, bodyText){
+    const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:bodyText||"", attachments:[att] };
+    const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); rememberConv(conv);
+    setOverview(o=>({...o,[conv]:{body:attachPreview(m),at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}}));
+  }
+  async function onPickFile(e, asImage){
+    const file=e.target.files&&e.target.files[0]; e.target.value="";
+    if(!file) return;
+    if(file.size>15*1048576){ alert("Filen är för stor (max 15 MB)."); return; }
+    setAttaching(true); setAttachMenu(false);
+    try{
+      const url=await uploadChatFile(token,file);
+      const isImg=asImage||(file.type||"").indexOf("image/")===0;
+      await sendAttachment(isImg
+        ? {type:"image", url, name:file.name, mime:file.type}
+        : {type:"file", url, name:file.name, mime:file.type, size:file.size});
+    }catch(err){ alert(err.message||"Kunde inte ladda upp"); }
+    setAttaching(false);
+  }
+  function shareLocation(){
+    setAttachMenu(false);
+    if(!navigator.geolocation){ alert("Plats stöds inte här."); return; }
+    setAttaching(true);
+    navigator.geolocation.getCurrentPosition(async(pos)=>{
+      try{ await sendAttachment({type:"location", lat:+pos.coords.latitude.toFixed(6), lng:+pos.coords.longitude.toFixed(6)}); }
+      catch(err){ alert(err.message||"Kunde inte dela plats"); }
+      setAttaching(false);
+    },(err)=>{ alert("Kunde inte hämta plats: "+err.message); setAttaching(false); },{enableHighAccuracy:true,timeout:10000});
   }
 
   const [pushBusy,setPushBusy]=useState(false);
@@ -2430,7 +2499,12 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
                    <div key={m.id} className={"bubble-row"+(mine?" me":"")+(grouped?" grp":"")}>
                      <div className={"bubble"+(mine?" me":"")}>
                        {showName && <div className="bubble-name">{nameForSender(m)}</div>}
-                       <div className="bubble-body">{m.body}</div>
+                       {(m.attachments||[]).map((a,ai)=>{
+                         if(a.type==="image") return <a key={ai} href={a.url} target="_blank" rel="noopener" className="att-img"><img src={a.url} alt={a.name||"bild"} loading="lazy" /></a>;
+                         if(a.type==="location") return <a key={ai} href={"https://www.google.com/maps?q="+a.lat+","+a.lng} target="_blank" rel="noopener" className="att-loc">{Ico.pin}<span><b>Delad plats</b><small>{a.lat}, {a.lng}</small></span></a>;
+                         return <a key={ai} href={a.url} target="_blank" rel="noopener" download={a.name} className="att-file">{Ico.file2||Ico.report}<span><b>{a.name||"Fil"}</b><small>{fmtBytes(a.size)}</small></span></a>;
+                       })}
+                       {m.body && <div className="bubble-body">{m.body}</div>}
                        <div className="bubble-time">{fmtTime(m.created_at)}</div>
                      </div>
                    </div>
@@ -2441,7 +2515,17 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
           <div ref={endRef}></div>
         </div>
         <div className="chat-input">
-          <textarea value={text} onChange={e=>setText(e.target.value)} rows={1} placeholder={"Skriv till "+labelFor(conv)+"…"}
+          <input ref={imgInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>onPickFile(e,true)} />
+          <input ref={fileInputRef} type="file" style={{display:"none"}} onChange={e=>onPickFile(e,false)} />
+          <div className="att-wrap">
+            <button className="chat-attach" disabled={attaching} onClick={()=>setAttachMenu(v=>!v)} title="Bifoga">{attaching?"…":Ico.plus}</button>
+            {attachMenu && <div className="att-menu">
+              <button onClick={()=>{ setAttachMenu(false); imgInputRef.current&&imgInputRef.current.click(); }}>{Ico.image||Ico.box} Bild</button>
+              <button onClick={()=>{ setAttachMenu(false); fileInputRef.current&&fileInputRef.current.click(); }}>{Ico.file2||Ico.report} Fil</button>
+              <button onClick={shareLocation}>{Ico.pin} Plats</button>
+            </div>}
+          </div>
+          <textarea value={text} onChange={e=>setText(e.target.value)} rows={1} placeholder={attaching?"Laddar upp…":("Skriv till "+labelFor(conv)+"…")}
             onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); } }} />
           <button className="chat-send" disabled={sending||!text.trim()} onClick={send} title="Skicka">{Ico.send}</button>
         </div>
