@@ -756,7 +756,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.26.0";
+const APP_VERSION = "1.27.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -911,7 +911,16 @@ async function enablePush(token, uid){
   let perm;
   try{ perm = await Notification.requestPermission(); }catch(e){ throw new Error("Steg lov: "+(e.message||e)); }
   if(perm!=="granted") throw new Error("Lov nekades (status: "+perm+")");
-  const reg = await navigator.serviceWorker.ready;
+  let reg;
+  try{
+    reg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")), 6000))
+    ]);
+  }catch(e){
+    try{ reg = await navigator.serviceWorker.getRegistration(); }catch(e2){}
+    if(!reg) throw new Error("Steg SW: service worker blev aldrig aktiv. Ta bort appen från hemskärmen och lägg till den igen.");
+  }
   let sub;
   try{
     const old = await reg.pushManager.getSubscription();
