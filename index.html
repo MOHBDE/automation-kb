@@ -772,7 +772,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.29.0";
+const APP_VERSION = "1.30.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1682,7 +1682,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     if(!name || !isFinite(lat) || !isFinite(lng)) return;
     const next={...stationGeo, [name]:{lat,lng}}; setStationGeo(next);
     try{ localStorage.setItem(stationGeoCacheKey, JSON.stringify(next)); }catch(e){}
-    try{ await fetch(stationGeoBase+"?on_conflict=name", {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=merge-duplicates"}, body:JSON.stringify([{name,lat,lng,updated_at:new Date().toISOString()}])}); }catch(e){}
+    try{ await fetch(stationGeoBase+"?on_conflict=org_id,name", {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=merge-duplicates"}, body:JSON.stringify([{name,lat,lng,updated_at:new Date().toISOString()}])}); }catch(e){}
     flash("Position sparad för "+name);
   }
   const sysScope=useMemo(()=>activeSystem==="Alla"?entries:entries.filter(e=>(e.system||"Ignition")===activeSystem),[entries,activeSystem]);
