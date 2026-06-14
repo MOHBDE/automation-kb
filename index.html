@@ -769,6 +769,25 @@
   .larm-field{display:flex;flex-direction:column;gap:1px;margin-top:9px;}
   .larm-field b{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-weight:600;}
   .larm-field span{font-size:14px;color:var(--txt2);line-height:1.5;}
+  .cmdk-back{position:fixed;inset:0;background:rgba(4,7,11,.6);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:56px 16px;}
+  body.light .cmdk-back{background:rgba(15,23,42,.35);}
+  .cmdk{width:100%;max-width:560px;background:var(--panel2);border:1px solid var(--line-strong);border-radius:16px;box-shadow:0 30px 70px -20px rgba(0,0,0,.6);overflow:hidden;animation:cardIn .16s ease both;}
+  .cmdk-in{display:flex;align-items:center;gap:11px;padding:15px 16px;border-bottom:1px solid var(--line);}
+  .cmdk-in svg{width:19px;height:19px;color:var(--dim);flex-shrink:0;}
+  .cmdk-in input{flex:1;border:none;background:transparent;color:var(--txt);font-family:var(--sans);font-size:16px;outline:none;}
+  .cmdk-esc{font-family:var(--mono);font-size:10px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:2px 7px;}
+  .cmdk-body{max-height:60vh;overflow-y:auto;padding:7px;}
+  .cmdk-lbl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);padding:9px 10px 5px;}
+  .cmdk-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:none;background:transparent;color:var(--txt);font-family:var(--sans);font-size:14.5px;padding:10px 11px;border-radius:9px;cursor:pointer;}
+  .cmdk-row:hover{background:var(--inset);}
+  .cmdk-ic{display:flex;color:var(--accent);flex-shrink:0;}
+  .cmdk-ic svg{width:17px;height:17px;}
+  .cmdk-txt{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cmdk-txt small{color:var(--dim);}
+  .cmdk-empty{padding:24px;text-align:center;color:var(--dim);font-size:14px;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .card,.larm-card{animation:cardIn .2s ease both;}
+  .btn-amber:active,.qbtn:active,.chip:active,.foot-mini:active,.hbtn:active,.cmdk-row:active{transform:scale(.97);}
   /* Offline package */
   .offline-pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-family:var(--mono);color:#34d399;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:6px;padding:2px 7px;}
   .offline-pill svg{width:11px;height:11px;}
@@ -798,7 +817,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.31.0";
+const APP_VERSION = "1.32.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1431,6 +1450,32 @@ function Login({onLogin,theme,onToggleTheme}){
   );
 }
 
+function CommandPalette({entries, stations, alarms, onPost, onStation, onLarm, onNav, onClose}){
+  const [q,setQ]=useState("");
+  const inputRef=useRef(null);
+  useEffect(()=>{ if(inputRef.current) inputRef.current.focus(); },[]);
+  useEffect(()=>{ const h=e=>{ if(e.key==="Escape") onClose(); }; window.addEventListener("keydown",h); return ()=>window.removeEventListener("keydown",h); },[onClose]);
+  const s=q.trim().toLowerCase();
+  const navItems=[["oversikt","Hem"],["bibliotek","Bibliotek"],["kod","Kod"],["anteckningar","Anteckningar"],["larm","Larm-uppslag"],["chatt","Chatt"]].filter(n=>!s||n[1].toLowerCase().indexOf(s)>=0);
+  const postHits=(!s?entries.slice():entries.filter(e=>[(e.title||""),(e.notes||""),(e.station||""),((e.tags||[]).join(" "))].join(" ").toLowerCase().indexOf(s)>=0)).slice(0,8);
+  const stationHits=stations.filter(st=>!s||st.name.toLowerCase().indexOf(s)>=0).slice(0,6);
+  const alarmHits=alarms.filter(a=>!s||[a.code,a.title,a.cause,a.action].some(v=>(v||"").toLowerCase().indexOf(s)>=0)).slice(0,6);
+  const none=postHits.length===0&&stationHits.length===0&&alarmHits.length===0&&navItems.length===0;
+  return (
+    <div className="cmdk-back" onClick={onClose}>
+      <div className="cmdk" onClick={e=>e.stopPropagation()}>
+        <div className="cmdk-in">{Ico.search}<input ref={inputRef} value={q} onChange={e=>setQ(e.target.value)} placeholder="Sök poster, stationer, larm – eller hoppa till en vy…" /><span className="cmdk-esc">esc</span></div>
+        <div className="cmdk-body">
+          {postHits.length>0 && <div className="cmdk-grp"><div className="cmdk-lbl">Poster</div>{postHits.map(e=><button key={e.id} className="cmdk-row" onClick={()=>onPost(e)}><span className="cmdk-ic">{e.is_code?Ico.terminal:Ico.note}</span><span className="cmdk-txt">{e.title||"(namnlös)"}{e.station?<small> · {e.station}</small>:null}</span></button>)}</div>}
+          {stationHits.length>0 && <div className="cmdk-grp"><div className="cmdk-lbl">Stationer</div>{stationHits.map(st=><button key={st.name} className="cmdk-row" onClick={()=>onStation(st.name)}><span className="cmdk-ic">{Ico.pin}</span><span className="cmdk-txt">{st.name}</span></button>)}</div>}
+          {alarmHits.length>0 && <div className="cmdk-grp"><div className="cmdk-lbl">Larmkoder</div>{alarmHits.map(a=><button key={a.id} className="cmdk-row" onClick={()=>onLarm(a)}><span className="cmdk-ic">{Ico.bell}</span><span className="cmdk-txt">{a.code||"—"} {a.title?<small>· {a.title}</small>:null}</span></button>)}</div>}
+          {navItems.length>0 && <div className="cmdk-grp"><div className="cmdk-lbl">Gå till</div>{navItems.map(n=><button key={n[0]} className="cmdk-row" onClick={()=>onNav(n[0])}><span className="cmdk-ic">{Ico.chevR}</span><span className="cmdk-txt">{n[1]}</span></button>)}</div>}
+          {none && <div className="cmdk-empty">Inga träffar.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
 function LarmView({alarms, onSave, onDelete}){
   const [q,setQ]=useState("");
   const [form,setForm]=useState(null);
@@ -1494,6 +1539,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   const [busy,setBusy]=useState(false);
   const [search,setSearch]=useState("");
   const [activeView,setActiveView]=useState("oversikt");
+  const [palette,setPalette]=useState(false);
+  useEffect(()=>{ const h=e=>{ if((e.metaKey||e.ctrlKey)&&(e.key==="k"||e.key==="K")){ e.preventDefault(); setPalette(true); } }; window.addEventListener("keydown",h); return ()=>window.removeEventListener("keydown",h); },[]);
   const [scope,setScope]=useState("alla");
   const [printData,setPrintData]=useState(null);
   const [activeSystem,setActiveSystem]=useState("Alla");
@@ -1853,8 +1900,15 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
 
       <main className="main">
         <div className="topbar">
+          {palette && <CommandPalette entries={entries} stations={stationPoints} alarms={alarms}
+            onClose={()=>setPalette(false)}
+            onPost={e=>{ setPalette(false); openDetail(e); }}
+            onStation={n=>{ setPalette(false); setActiveStation(n); setActiveSystem("Alla"); setActiveCat("Alla"); setSearch(""); setActiveView("bibliotek"); }}
+            onLarm={()=>{ setPalette(false); setActiveView("larm"); }}
+            onNav={v=>{ setPalette(false); setActiveView(v); }} />}
           <div className="topbar-user">{Ico.users}<span className="topbar-email">{display}</span></div>
           <div className="topbar-actions">
+            <button className="hbtn" title="Snabbsök (⌘K)" onClick={()=>setPalette(true)}>{Ico.search}</button>
             {!online&&<span className="offline-badge"><span className="offline-dot"></span>Offline</span>}
             <HeaderMenu theme={theme} onToggleTheme={onToggleTheme} bigText={bigText} onToggleBig={onToggleBig} contrast={contrast} onToggleContrast={onToggleContrast} fieldMode={fieldMode} onToggleField={onToggleField} onExport={exportData} onImport={()=>fileRef.current.click()} onUsers={()=>setShowUsers(true)} />
             <button className="hbtn hbtn-trash" title="Papperskorg" onClick={()=>setShowTrash(true)}>{Ico.trash}{trash.length>0 && <span className="hbtn-badge">{trash.length}</span>}</button>
