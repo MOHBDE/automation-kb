@@ -755,7 +755,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.21.0";
+const APP_VERSION = "1.22.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -2438,7 +2438,7 @@ function Checklist({entry, interactive=true}){
       <div className="cl-items">
         {items.map((s,i)=>{
           const checked=done.indexOf(i)>=0;
-          return <button key={i} className={"cl-item"+(checked?" done":"")+(interactive?"":" ro")} onClick={()=>{ if(interactive) toggle(i); }}>
+          return <button key={i} className={"cl-item"+(checked?" done":"")+(interactive?"":" ro")} onClick={(e)=>{ e.stopPropagation(); if(interactive) toggle(i); }}>
             <span className="cl-box">{checked?Ico.check:null}</span>
             <span className="cl-text">{s}</span>
           </button>;
@@ -2571,7 +2571,7 @@ function EntryCard({entry,mine=true,copied,offlineSaved,fav,onFav,onStation,onCo
       {kind==="checklist" ? (
         <>
           {entry.notes && entry.notes.trim() && <p className="note desc">{entry.notes}</p>}
-          <Checklist entry={entry} interactive={false} />
+          <Checklist entry={entry} interactive={true} />
         </>
       ) : isCode ? (
         <>
