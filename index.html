@@ -756,7 +756,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.24.0";
+const APP_VERSION = "1.25.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -910,7 +910,8 @@ async function enablePush(token, uid){
   if(perm!=="granted") throw new Error("Du behöver tillåta aviseringar i webbläsaren.");
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();
-  if(!sub){ sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC) }); }
+  if(sub){ try{ await sub.unsubscribe(); }catch(e){} sub=null; }
+  sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC) });
   const r = await fetch(pushBase + "?on_conflict=endpoint", {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=merge-duplicates"}, body: JSON.stringify([{ user_id:uid, endpoint:sub.endpoint, subscription:sub.toJSON() }])});
   if(!r.ok && r.status!==409){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message||("Kunde inte spara prenumerationen ("+r.status+")")); }
   return true;
