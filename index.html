@@ -537,6 +537,7 @@
   .chat-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);font-family:var(--sans);font-size:14px;}
   .chat-search-x{border:none;background:none;color:var(--dim);cursor:pointer;display:flex;padding:0;}
   .convs{flex:1;overflow-y:auto;padding:4px 8px 12px;display:flex;flex-direction:column;gap:1px;}
+  .convs-sec{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:13px 12px 5px;}
   .convs::-webkit-scrollbar,.chat-msgs::-webkit-scrollbar{width:8px;}
   .convs::-webkit-scrollbar-thumb,.chat-msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:2px solid transparent;background-clip:padding-box;}
   .conv{position:relative;display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:9px 11px;border-radius:12px;border:none;background:none;cursor:pointer;color:var(--txt);font-family:var(--sans);transition:background .12s;}
@@ -755,7 +756,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.22.0";
+const APP_VERSION = "1.23.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -2370,7 +2371,15 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
           ) : (<>
             <ConvRow id="team" sub="Gemensam kanal för alla" />
             {convList.map(id=><ConvRow key={id} id={id} />)}
-            {convList.length===0 && <div className="chat-hint">Sök upp en kollega ovan för att börja chatta.</div>}
+            {(function(){
+              const shown=members.filter(m=>convList.indexOf(m.id)<0);
+              if(shown.length===0) return null;
+              return <React.Fragment>
+                <div className="convs-sec">Teammedlemmar</div>
+                {shown.map(m=><ConvRow key={m.id} id={m.id} sub={m.email||""} />)}
+              </React.Fragment>;
+            })()}
+            {convList.length===0 && members.length===0 && <div className="chat-hint">Inga andra medlemmar än. Bjud in kollegor via Konto → "Skapa inbjudningskod".</div>}
           </>)}
         </div>
       </div>
