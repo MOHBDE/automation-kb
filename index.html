@@ -44,7 +44,7 @@
   .sub{font-size:12px;color:var(--dim);margin:6px 0 0;letter-spacing:.01em;}
   .hbtns{margin-left:auto;display:flex;gap:7px;}
   .hbtn{width:38px;height:38px;border-radius:11px;background:var(--panel);border:1px solid var(--line);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-  .hbtn:hover{color:#fff;border-color:var(--line-strong);background:var(--line2);}
+  .hbtn:hover{color:var(--txt);border-color:var(--line-strong);background:var(--line2);}
   .hbtn.on{color:var(--accent);border-color:rgba(245,165,36,.4);background:var(--accent-soft);}
   .hmenu-wrap{position:relative;}
   .hmenu-backdrop{position:fixed;inset:0;z-index:60;}
@@ -91,7 +91,7 @@
   .tag{font-size:11px;color:var(--muted);font-family:var(--mono);opacity:.85;}
   .card-actions{display:flex;gap:5px;flex-shrink:0;}
   .ibtn{width:30px;height:30px;border-radius:9px;border:1px solid transparent;background:var(--line2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-  .ibtn:hover{color:#fff;border-color:var(--line-strong);}
+  .ibtn:hover{color:var(--txt);border-color:var(--line-strong);}
   .code-wrap{margin:3px 16px 12px 18px;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--code);}
   .code-bar{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.035),transparent);}
   .cdots{display:flex;gap:6px;}
@@ -103,7 +103,7 @@
   pre.code::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px;}
   p.note{padding:5px 18px 10px;font-size:14px;color:var(--txt2);white-space:pre-wrap;line-height:1.65;margin:0;}
   .more{margin:0 18px 15px;background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:color .15s;}
-  .more:hover{color:#fff;}
+  .more:hover{color:var(--txt);}
   .confirm{padding:11px 16px 11px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;background:rgba(248,113,113,.07);border-top:1px solid rgba(248,113,113,.2);}
   .confirm .msg{color:#fca5a5;display:flex;align-items:center;gap:6px;}
   .confirm button{border:none;cursor:pointer;padding:5px 11px;border-radius:7px;font-size:12px;}
@@ -214,7 +214,7 @@
   .bk-count{font-size:11px;color:var(--dim);font-family:var(--mono);}
   .modal-body{padding:20px;display:flex;flex-direction:column;gap:16px;}
   .x{background:none;border:none;color:var(--dim);cursor:pointer;transition:color .15s;}
-  .x:hover{color:#fff;}
+  .x:hover{color:var(--txt);}
   label.field{display:block;}
   label.field .lbl{font-size:12px;color:var(--dim);margin-bottom:7px;display:block;letter-spacing:.01em;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -348,7 +348,7 @@
   .topic-cnt{font-family:var(--mono);font-size:12px;color:var(--dim);}
   .minirow{display:flex;align-items:center;gap:11px;width:100%;padding:9px 6px;border:none;border-bottom:1px solid var(--line);background:none;cursor:pointer;text-align:left;}
   .minirow:last-child{border-bottom:none;}
-  .minirow:hover .mini-title{color:#fff;}
+  .minirow:hover .mini-title{color:var(--txt);}
   .mini-ic{display:flex;flex-shrink:0;}
   .mini-title{flex:1;font-size:13px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .mini-pin{display:flex;}
@@ -481,7 +481,7 @@
   .atag-clear{padding:5px 10px;border-radius:9px;border:1px solid var(--line-strong);background:none;color:var(--muted);font-size:12px;cursor:pointer;}
   .atag-clear:hover{color:var(--accent);border-color:var(--accent);}
   /* Language selector */
-  .langsel{background:var(--code);border:1px solid var(--line-strong);color:var(--txt2);border-radius:8px;padding:8px 10px;font-family:var(--sans);font-size:13px;text-transform:none;letter-spacing:0;min-width:120px;}
+  .langsel{background:var(--code);border:1px solid var(--line-strong);color:var(--txt2);border-radius:8px;padding:8px 10px;font-family:var(--sans);font-size:13px;text-transform:none;letter-spacing:0;min-width:110px;max-width:100%;}
   /* Code line numbers */
   pre.code{display:flex;gap:12px;}
   pre.code .gutter{flex:none;text-align:right;color:#5a6673;user-select:none;white-space:pre;border-right:1px solid rgba(255,255,255,.07);padding-right:11px;}
@@ -625,6 +625,11 @@
   .langpick>span{font-size:11px;color:var(--dim);font-family:var(--sans);}
   .blockedit .langsel{margin-left:0;flex-shrink:0;}
   .block-del{flex-shrink:0;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  @media(max-width:560px){
+    .block-title{flex:1 1 100%;}
+    .langpick{margin-left:0;flex:1 1 100%;}
+    .langpick .langsel{flex:1;min-width:0;}
+  }
   .block-del:hover{color:var(--danger);border-color:rgba(248,113,113,.4);}
   .addblock{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);border:1px solid rgba(245,165,36,.35);color:var(--accent);padding:8px 13px;border-radius:10px;font-size:13px;font-family:var(--sans);cursor:pointer;}
   .addblock:hover{border-color:var(--accent);}
@@ -750,7 +755,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.17.0";
+const APP_VERSION = "1.19.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1318,7 +1323,7 @@ function Login({onLogin,theme,onToggleTheme}){
       <div className="login-card">
         <div className="login-logo">{Ico.db}</div>
         <h1 style={{fontFamily:"var(--mono)"}}>SCADA·KB</h1>
-        <p>{signup?"Skapa ett konto. En administratör godkänner dig innan du kommer in.":"Logga in för att nå din kunskapsbas."}</p>
+        <p>{signup?"Skapa ett konto. Sedan startar du en organisation eller går med via en inbjudningskod.":"Logga in för att nå din kunskapsbas."}</p>
         {err && <div className="banner err" style={{marginTop:0}}>{err}</div>}
         {info && <div className="banner" style={{marginTop:0,background:"rgba(52,211,153,.1)",border:"1px solid rgba(52,211,153,.3)",color:"#6ee7b7"}}>{info}</div>}
         {signup && <label><span className="lbl">Namn</span>
@@ -1637,9 +1642,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       setCustomSys(names); saveSysList(names);
     }catch(e){}
   })(); },[token]);
-  const systems=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; SYSTEMS.forEach(add); customSys.forEach(add); entries.forEach(e=>add(e.system||"Ignition")); return out; },[customSys,entries]);
+  const systems=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; customSys.forEach(add); entries.forEach(e=>{ if(e.system) add(e.system); }); return out; },[customSys,entries]);
   async function addSystem(name){ name=(name||"").trim(); if(!name||systems.includes(name)) return; const next=[...customSys,name]; setCustomSys(next); saveSysList(next); try{ await fetch(sysBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify([{name}])}); }catch(e){} }
-  async function removeSystem(name){ if(SYSTEMS.includes(name)) return; if((sysCounts[name]||0)>0) return; const next=customSys.filter(s=>s!==name); setCustomSys(next); saveSysList(next); try{ await fetch(sysBase+"?name=eq."+encodeURIComponent(name), {method:"DELETE", headers:dataHeaders(token)}); }catch(e){} }
+  async function removeSystem(name){ if((sysCounts[name]||0)>0) return; const next=customSys.filter(s=>s!==name); setCustomSys(next); saveSysList(next); try{ await fetch(sysBase+"?name=eq."+encodeURIComponent(name), {method:"DELETE", headers:dataHeaders(token)}); }catch(e){} }
   const catCounts=useMemo(()=>{const c={}; entries.forEach(e=>{const s=e.category||"Övrigt"; c[s]=(c[s]||0)+1;}); return c;},[entries]);
   const [customCat,setCustomCat]=useState(loadCatList);
   const [showCat,setShowCat]=useState(false);
@@ -1653,9 +1658,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       setCustomCat(names); saveCatList(names);
     }catch(e){}
   })(); },[token]);
-  const categories=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; CATEGORIES.forEach(add); customCat.forEach(add); entries.forEach(e=>add(e.category||"Övrigt")); return out; },[customCat,entries]);
+  const categories=useMemo(()=>{ const out=[]; const add=n=>{ n=(n||"").trim(); if(n&&!out.includes(n)) out.push(n); }; customCat.forEach(add); entries.forEach(e=>{ if(e.category) add(e.category); }); return out; },[customCat,entries]);
   async function addCategory(name){ name=(name||"").trim(); if(!name||categories.includes(name)) return; const next=[...customCat,name]; setCustomCat(next); saveCatList(next); try{ await fetch(catBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=ignore-duplicates"}, body:JSON.stringify([{name}])}); }catch(e){} }
-  async function removeCategory(name){ if(CATEGORIES.includes(name)) return; if((catCounts[name]||0)>0) return; const next=customCat.filter(s=>s!==name); setCustomCat(next); saveCatList(next); try{ await fetch(catBase+"?name=eq."+encodeURIComponent(name), {method:"DELETE", headers:dataHeaders(token)}); }catch(e){} }
+  async function removeCategory(name){ if((catCounts[name]||0)>0) return; const next=customCat.filter(s=>s!==name); setCustomCat(next); saveCatList(next); try{ await fetch(catBase+"?name=eq."+encodeURIComponent(name), {method:"DELETE", headers:dataHeaders(token)}); }catch(e){} }
   const pinnedCount=useMemo(()=>entries.filter(e=>e.pinned).length,[entries]);
   const codeCount=useMemo(()=>entries.filter(e=>e.is_code).length,[entries]);
   const noteCount=useMemo(()=>entries.filter(e=>!e.is_code).length,[entries]);
@@ -2759,7 +2764,7 @@ function CategoryModal({categories,counts,builtins,onAdd,onRemove,onClose}){
           <p className="sys-hint">Lägg till egna ämnen (kategorier) för era poster. Ett ämne som redan har poster kan inte tas bort förrän posterna flyttats.</p>
           <div className="sys-list">
             {categories.map(s=>{
-              const c=counts[s]||0; const builtin=builtins.includes(s); const removable=!builtin && c===0;
+              const c=counts[s]||0; const removable=c===0;
               return (
                 <div className="sys-item" key={s}>
                   <span className="sysdot" style={{background:catColor(s)}}></span>
@@ -2767,7 +2772,7 @@ function CategoryModal({categories,counts,builtins,onAdd,onRemove,onClose}){
                   <span className="sys-count">{c} {c===1?"post":"poster"}</span>
                   {removable
                     ? <button className="sys-rm" title="Ta bort ämne" onClick={()=>onRemove(s)}>{Ico.x}</button>
-                    : <span className="sys-lock">{builtin?"inbyggt":"används"}</span>}
+                    : <span className="sys-lock">används</span>}
                 </div>
               );
             })}
@@ -2793,7 +2798,7 @@ function SystemModal({systems,counts,onAdd,onRemove,onClose}){
           <p className="sys-hint">Lägg till de SCADA-/HMI-system ni jobbar med. Ett system som redan har poster kan inte tas bort förrän posterna flyttats eller raderats.</p>
           <div className="sys-list">
             {systems.map(s=>{
-              const c=counts[s]||0; const builtin=SYSTEMS.includes(s); const removable=!builtin && c===0;
+              const c=counts[s]||0; const removable=c===0;
               return (
                 <div className="sys-item" key={s}>
                   <span className="sysdot" style={{background:colorForSys(s)}}></span>
@@ -2801,7 +2806,7 @@ function SystemModal({systems,counts,onAdd,onRemove,onClose}){
                   <span className="sys-count">{c} {c===1?"post":"poster"}</span>
                   {removable
                     ? <button className="sys-rm" title="Ta bort system" onClick={()=>onRemove(s)}>{Ico.x}</button>
-                    : <span className="sys-lock">{builtin?"inbyggt":"används"}</span>}
+                    : <span className="sys-lock">används</span>}
                 </div>
               );
             })}
@@ -3080,7 +3085,7 @@ function UserModal({token,user,name,uid,isAdmin,onName,backups=[],onDownloadBack
               <p style={{color:"var(--dim)",fontSize:11,margin:0,lineHeight:1.5}}>Nya kollegor registrerar sig själva på inloggningssidan. De kommer in först när du godkänt dem här. Varje användare ser bara sina egna poster.</p>
             </>
           ) : (
-            <p style={{color:"var(--dim)",fontSize:12,margin:0,lineHeight:1.5}}>Dina poster är privata. Nya kollegor kan registrera sig själva på inloggningssidan — en administratör godkänner dem.</p>
+            <p style={{color:"var(--dim)",fontSize:12,margin:0,lineHeight:1.5}}>Dina poster är privata för din organisation. Bjud in kollegor med en inbjudningskod (knappen ovan) så hamnar de i samma organisation.</p>
           )}
           <div className="bk-section">
             <div className="bk-head">{Ico.db} Säkerhetskopior</div>
