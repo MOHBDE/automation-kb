@@ -788,6 +788,34 @@
   @keyframes cardIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
   .card,.larm-card{animation:cardIn .2s ease both;}
   .btn-amber:active,.qbtn:active,.chip:active,.foot-mini:active,.hbtn:active,.cmdk-row:active{transform:scale(.97);}
+  .histacts{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+  .hist-restore.ghost{background:var(--inset);color:var(--txt2);}
+  .diffbox{margin-top:8px;background:var(--code);border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-family:var(--mono);font-size:12px;line-height:1.5;max-height:240px;overflow:auto;white-space:pre-wrap;word-break:break-word;}
+  .diffl{display:block;}
+  .diffl.add{color:#34d399;}
+  .diffl.del{color:#f87171;}
+  .diffl.same{color:var(--dim);}
+  .runs{margin-top:18px;}
+  .run-active{background:var(--inset);border:1px solid var(--line-strong);border-radius:13px;padding:12px;margin-top:8px;display:flex;flex-direction:column;gap:7px;}
+  .run-ahead{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);}
+  .run-fact{display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:10px;}
+  .run-prog{font-size:13px;color:var(--txt2);font-family:var(--mono);}
+  .runlist{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+  .runrow{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:10px 12px;}
+  .run-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+  .run-dot.done{background:#34d399;}
+  .run-main{flex:1;min-width:0;}
+  .run-top{font-size:14px;font-weight:600;color:var(--txt);}
+  .run-top small{font-weight:400;color:var(--dim);font-family:var(--mono);font-size:11px;}
+  .run-sub{font-size:12px;color:var(--txt2);margin-top:1px;}
+  .urow-acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;flex-shrink:0;}
+  .chat-input{position:relative;}
+  .mention-menu{position:absolute;left:58px;right:58px;bottom:54px;background:var(--panel2);border:1px solid var(--line-strong);border-radius:12px;padding:6px;box-shadow:0 14px 36px rgba(0,0,0,.45);z-index:40;display:flex;flex-direction:column;gap:2px;}
+  .mention-menu button{display:flex;align-items:center;gap:9px;padding:9px 11px;border:none;background:transparent;color:var(--txt);font-family:var(--sans);font-size:14px;border-radius:8px;cursor:pointer;text-align:left;width:100%;}
+  .mention-menu button:hover{background:var(--inset);}
+  .mention-menu button svg{width:16px;height:16px;color:var(--accent);flex-shrink:0;}
+  .mention{color:var(--accent);font-weight:600;}
+  .bubble.me .mention{color:#3a2a08;font-weight:700;}
   /* Offline package */
   .offline-pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-family:var(--mono);color:#34d399;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:6px;padding:2px 7px;}
   .offline-pill svg{width:11px;height:11px;}
@@ -817,7 +845,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.32.0";
+const APP_VERSION = "1.34.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -947,6 +975,7 @@ async function uploadFile(token, uid, file){
 const verBase = SUPABASE_URL + "/rest/v1/entry_versions";
 const msgBase = SUPABASE_URL + "/rest/v1/messages";
 const alarmBase = SUPABASE_URL + "/rest/v1/alarm_codes";
+const runBase = SUPABASE_URL + "/rest/v1/checklist_runs";
 const commentsBase = SUPABASE_URL + "/rest/v1/comments";
 async function listComments(token, entryId){
   const r = await fetch(commentsBase + "?entry_id=eq." + entryId + "&select=*&order=created_at.asc", {headers: dataHeaders(token)});
@@ -1072,6 +1101,17 @@ function attachPreview(m){
   return "📎 " + (a.name||"Fil");
 }
 function fmtBytes(n){ if(!n&&n!==0) return ""; if(n<1024) return n+" B"; if(n<1048576) return (n/1024).toFixed(0)+" kB"; return (n/1048576).toFixed(1)+" MB"; }
+function entryText(e){ if(!e) return ""; const parts=[e.title||"", e.notes||"", e.content||""]; (e.blocks||[]).forEach(b=>{ if(b&&b.code) parts.push(b.code); }); (e.checklist||[]).forEach(c=>parts.push(typeof c==="string"?c:(c&&c.text)||"")); return parts.filter(s=>s&&s.length).join("\n"); }
+function lineDiff(a,b){
+  const A=(a||"").split("\n"), B=(b||"").split("\n"); const n=A.length,m=B.length;
+  const dp=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--) dp[i][j]=A[i]===B[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  const out=[]; let i=0,j=0;
+  while(i<n&&j<m){ if(A[i]===B[j]){ out.push({t:"same",l:A[i]}); i++;j++; } else if(dp[i+1][j]>=dp[i][j+1]){ out.push({t:"del",l:A[i]}); i++; } else { out.push({t:"add",l:B[j]}); j++; } }
+  while(i<n){ out.push({t:"del",l:A[i++]}); }
+  while(j<m){ out.push({t:"add",l:B[j++]}); }
+  return out;
+}
 async function fetchChatOverview(token, me){
   const q="or=(sender_id.eq."+me+",recipient_id.eq."+me+",recipient_id.is.null)";
   const r = await fetch(msgBase + "?" + q + "&select=sender_id,recipient_id,body,attachments,created_at&order=created_at.desc&limit=200", {headers: dataHeaders(token)});
@@ -1163,7 +1203,7 @@ async function updateDisplayName(token, uid, newName){
   try{ await fetch(profBase+"?id=eq."+uid, {method:"PATCH", headers:dataHeaders(token), body:JSON.stringify({name:newName})}); }catch(e){}
 }
 async function listProfiles(token){
-  const r = await fetch(profBase + "?select=id,email,approved,is_admin&order=approved.asc,email.asc", {headers:dataHeaders(token)});
+  const r = await fetch(profBase + "?select=id,email,approved,role,name&order=approved.asc,email.asc", {headers:dataHeaders(token)});
   if(!r.ok) throw new Error("LIST "+r.status); return r.json();
 }
 async function setApproved(token, id, val){
@@ -1343,7 +1383,7 @@ function App(){
   else if (profile===undefined) view = (<div className="login-wrap"><div className="login-card" style={{textAlign:"center"}}><div className="login-logo">{Ico.db}</div><p>Laddar…</p></div></div>);
   else if (profile && !profile.approved && !profile._legacy) view = <Pending email={user} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />;
   else if (profile && !profile.org_id && !profile._legacy) view = <OrgOnboarding token={token} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} onDone={async()=>{ setProfile(undefined); try{ setProfile(await getMyProfile(token, uid, user, name)); }catch(e){ setProfile({approved:true,is_admin:false,_legacy:true}); } }} />;
-  else view = <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&profile.is_admin)} onName={setName} theme={theme} onToggleTheme={toggleTheme} bigText={bigText} onToggleBig={toggleBig} contrast={contrast} onToggleContrast={toggleContrast} fieldMode={fieldMode} onToggleField={toggleField} onLogout={logout} />;
+  else view = <KB token={token} user={user} name={name} uid={uid} isAdmin={!!(profile&&(profile.role==="owner"||profile.role==="admin"))} onName={setName} theme={theme} onToggleTheme={toggleTheme} bigText={bigText} onToggleBig={toggleBig} contrast={contrast} onToggleContrast={toggleContrast} fieldMode={fieldMode} onToggleField={toggleField} onLogout={logout} />;
   return (<>{updateReady && <div className="update-bar"><span>{Ico.spark} Ny version finns</span><button onClick={applyUpdate}>Uppdatera</button></div>}{view}</>);
 }
 
@@ -1450,6 +1490,74 @@ function Login({onLogin,theme,onToggleTheme}){
   );
 }
 
+function ChecklistRuns({entry, token, runner}){
+  const baseItems=(entry.checklist||[]).map(c=>typeof c==="string"?c:(c&&c.text)||"");
+  const [runs,setRuns]=useState(null);
+  const [active,setActive]=useState(null);
+  const [busy,setBusy]=useState(false);
+  useEffect(()=>{ (async()=>{
+    try{ const r=await fetch(runBase+"?entry_id=eq."+entry.id+"&select=*&order=started_at.desc",{headers:dataHeaders(token)}); setRuns(r.ok?await r.json():[]); }catch(e){ setRuns([]); }
+  })(); },[entry.id]);
+  async function start(){
+    setBusy(true);
+    const row={ entry_id:entry.id, title:entry.title||"", runner:runner||"", items:baseItems.map(t=>({text:t,done:false})) };
+    try{ const r=await fetch(runBase,{method:"POST",headers:{...dataHeaders(token),Prefer:"return=representation"},body:JSON.stringify([row])}); const ins=(await r.json())[0]; setActive(ins); setRuns(x=>[ins,...(x||[])]); }
+    catch(e){ alert("Kunde inte starta körning"); }
+    setBusy(false);
+  }
+  async function patch(run, fields){
+    try{ const r=await fetch(runBase+"?id=eq."+run.id,{method:"PATCH",headers:{...dataHeaders(token),Prefer:"return=representation"},body:JSON.stringify(fields)}); const upd=(await r.json())[0]; setRuns(x=>(x||[]).map(z=>z.id===run.id?upd:z)); if(active&&active.id===run.id) setActive(fields.finished_at?null:upd); return upd; }catch(e){}
+  }
+  function toggle(i){ if(!active) return; const items=active.items.map((it,k)=>k===i?{...it,done:!it.done}:it); setActive({...active,items}); patch(active,{items}); }
+  function finish(){ if(active) patch(active,{finished_at:new Date().toISOString()}); }
+  async function del(id){ setRuns(x=>(x||[]).filter(z=>z.id!==id)); if(active&&active.id===id) setActive(null); try{ await fetch(runBase+"?id=eq."+id,{method:"DELETE",headers:dataHeaders(token)}); }catch(e){} }
+  if(baseItems.length===0) return null;
+  return (
+    <div className="runs">
+      <div className="related-h">{Ico.checklist} Körningar (protokoll)</div>
+      {active ? (
+        <div className="run-active">
+          <div className="run-ahead">Pågående · {active.runner||"du"}</div>
+          {active.items.map((it,i)=>(
+            <button key={i} className={"cl-item"+(it.done?" done":"")} onClick={()=>toggle(i)}>
+              <span className={"cl-box"+(it.done?" on":"")}>{it.done?Ico.check:null}</span>
+              <span className="cl-text">{it.text}</span>
+            </button>
+          ))}
+          <div className="run-fact">
+            <span className="run-prog">{active.items.filter(x=>x.done).length}/{active.items.length} klara</span>
+            <button className="btn-amber" onClick={finish}>{Ico.check} Slutför</button>
+          </div>
+        </div>
+      ) : (
+        <button className="foot-mini" disabled={busy} onClick={start}>{Ico.add} Starta ny körning</button>
+      )}
+      {runs && runs.length>0 && <div className="runlist">
+        {runs.map(r=>{ const done=(r.items||[]).filter(x=>x.done).length; const tot=(r.items||[]).length; const fin=!!r.finished_at;
+          return <div key={r.id} className="runrow">
+            <span className={"run-dot"+(fin?" done":"")}></span>
+            <div className="run-main">
+              <div className="run-top">{r.runner||"—"} <small>{fmtDateTime(r.started_at)}</small></div>
+              <div className="run-sub">{fin?"Klar":"Pågår"} · {done}/{tot} klara</div>
+            </div>
+            <button className="ibtn" title="Ta bort" onClick={()=>{ if(confirm("Ta bort körningen?")) del(r.id); }}>{Ico.trash}</button>
+          </div>;
+        })}
+      </div>}
+    </div>
+  );
+}
+function renderMentions(text, names){
+  if(!text) return text;
+  const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const sorted=(names||[]).filter(Boolean).slice().sort((a,b)=>b.length-a.length).map(esc);
+  const alt=sorted.concat(["[\\wåäöÅÄÖ]+"]).join("|");
+  let re; try{ re=new RegExp("@("+alt+")","g"); }catch(e){ return text; }
+  const out=[]; let last=0,m,k=0;
+  while((m=re.exec(text))){ if(m.index>last) out.push(text.slice(last,m.index)); out.push(<span className="mention" key={"m"+(k++)}>@{m[1]}</span>); last=m.index+m[0].length; }
+  if(last<text.length) out.push(text.slice(last));
+  return out;
+}
 function CommandPalette({entries, stations, alarms, onPost, onStation, onLarm, onNav, onClose}){
   const [q,setQ]=useState("");
   const inputRef=useRef(null);
@@ -2265,7 +2373,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
   const sysColor=colorForSys(sys);
   const tags=entry.tags||[];
   const [copied,setCopied]=useState(false);
-  const [hist,setHist]=useState(null); const [histBusy,setHistBusy]=useState(false); const [restoring,setRestoring]=useState(false);
+  const [hist,setHist]=useState(null); const [histBusy,setHistBusy]=useState(false); const [restoring,setRestoring]=useState(false); const [diffV,setDiffV]=useState(null);
   const [comments,setComments]=useState(null); const [ctext,setCtext]=useState(""); const [csending,setCsending]=useState(false);
   useEffect(()=>{ let stop=false; listComments(token, entry.id).then(c=>{ if(!stop) setComments(c); }).catch(()=>{ if(!stop) setComments([]); }); return ()=>{ stop=true; }; },[entry.id]);
   async function postComment(){
@@ -2324,6 +2432,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
             <>
               {entry.notes && entry.notes.trim() && <p className="note desc" style={{padding:"2px 0"}}>{entry.notes}</p>}
               <Checklist entry={entry} interactive={true} />
+              <ChecklistRuns entry={entry} token={token} runner={name||display||user} />
             </>
           ) : blocks ? (
             <>
@@ -2377,8 +2486,13 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
                     <div style={{minWidth:0,flex:1}}>
                       <div className="hist-when">{Ico.clock} {fmtDateTime(v.created_at)}</div>
                       <div className="hist-snip">{((v.snapshot&&v.snapshot.content)||"").replace(/\s+/g," ").slice(0,70)||"(tom)"}</div>
+                      {diffV===v.id && (()=>{ const d=lineDiff(entryText(v.snapshot), entryText(entry)); const changed=d.filter(x=>x.t!=="same");
+                        return <div className="diffbox">{(changed.length?d:[{t:"same",l:"(inga textändringar)"}]).map((x,k)=><div key={k} className={"diffl "+x.t}>{x.t==="add"?"+ ":x.t==="del"?"- ":"  "}{x.l||" "}</div>)}</div>; })()}
                     </div>
-                    <button className="hist-restore" disabled={restoring} onClick={()=>doRestore(v)}>{Ico.undo} Återställ</button>
+                    <div className="histacts">
+                      <button className="hist-restore ghost" onClick={()=>setDiffV(diffV===v.id?null:v.id)}>{diffV===v.id?"Dölj":"Ändringar"}</button>
+                      <button className="hist-restore" disabled={restoring} onClick={()=>doRestore(v)}>{Ico.undo} Återställ</button>
+                    </div>
                   </div>
                  ))}
             </div>
@@ -2481,9 +2595,14 @@ function CompactRow({entry,mine=true,onOpen,onPin}){
 }
 function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   const [members,setMembers]=useState([]);
+  const mentionNames=useMemo(()=>[...members.map(x=>x.name||x.email||""), display||""].filter(Boolean),[members,display]);
+  const mentionHits=mention===null?[]:members.filter(x=>{ const n=(x.name||x.email||"").toLowerCase(); return n && n.indexOf(mention)>=0; }).slice(0,6);
   const [conv,setConv]=useState("team");
   const [msgs,setMsgs]=useState([]);
   const [text,setText]=useState("");
+  const [mention,setMention]=useState(null);
+  function onComposeChange(v){ setText(v); const mm=v.match(/@([\wåäöÅÄÖ]*)$/); setMention(mm?mm[1].toLowerCase():null); }
+  function pickMention(nm){ setText(t=>t.replace(/@[\wåäöÅÄÖ]*$/, "@"+nm+" ")); setMention(null); }
   const [loading,setLoading]=useState(true);
   const [sending,setSending]=useState(false);
   const [attaching,setAttaching]=useState(false);
@@ -2665,7 +2784,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
                          if(a.type==="location") return <a key={ai} href={"https://www.google.com/maps?q="+a.lat+","+a.lng} target="_blank" rel="noopener" className="att-loc">{Ico.pin}<span><b>Delad plats</b><small>{a.lat}, {a.lng}</small></span></a>;
                          return <a key={ai} href={a.url} target="_blank" rel="noopener" download={a.name} className="att-file">{Ico.file2||Ico.report}<span><b>{a.name||"Fil"}</b><small>{fmtBytes(a.size)}</small></span></a>;
                        })}
-                       {m.body && <div className="bubble-body">{m.body}</div>}
+                       {m.body && <div className="bubble-body">{renderMentions(m.body, mentionNames)}</div>}
                        <div className="bubble-time">{fmtTime(m.created_at)}</div>
                      </div>
                    </div>
@@ -2686,8 +2805,11 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
               <button onClick={shareLocation}>{Ico.pin} Plats</button>
             </div>}
           </div>
-          <textarea value={text} onChange={e=>setText(e.target.value)} rows={1} placeholder={attaching?"Laddar upp…":("Skriv till "+labelFor(conv)+"…")}
+          <textarea value={text} onChange={e=>onComposeChange(e.target.value)} rows={1} placeholder={attaching?"Laddar upp…":("Skriv till "+labelFor(conv)+"…")}
             onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); } }} />
+          {mention!==null && mentionHits.length>0 && <div className="mention-menu">
+            {mentionHits.map(x=><button key={x.id} onClick={()=>pickMention(x.name||x.email||"")}>{Ico.users}<span>{x.name||x.email}</span></button>)}
+          </div>}
           <button className="chat-send" disabled={sending||!text.trim()} onClick={send} title="Skicka">{Ico.send}</button>
         </div>
       </div>
@@ -3308,7 +3430,8 @@ function UserModal({token,user,name,uid,isAdmin,onName,backups=[],onDownloadBack
   async function makeInvite(){ setInviteBusy(true); try{ const c=await callRpc(token,"create_invite",{}); setInviteCode(typeof c==="string"?c:(c&&c[0])||""); }catch(e){ setInviteCode(""); alert(e.message||"Kunde inte skapa kod"); } setInviteBusy(false); }
   useEffect(()=>{ if(isAdmin) loadProfiles(); },[]);
   async function loadProfiles(){ setPBusy(true); try{ setProfiles(await listProfiles(token)); }catch(e){ setProfiles([]); } setPBusy(false); }
-  async function approve(id,val){ try{ await setApproved(token,id,val); setProfiles(ps=>(ps||[]).map(p=>p.id===id?{...p,approved:val}:p)); }catch(e){} }
+  async function setMember(id,fields){ try{ await callRpc(token,"admin_set_member",{target:id,new_approved:("new_approved" in fields?fields.new_approved:null),new_role:(fields.new_role||null)}); setProfiles(ps=>(ps||[]).map(p=>p.id===id?{...p,...("new_approved" in fields?{approved:fields.new_approved}:{}),...(fields.new_role?{role:fields.new_role}:{})}:p)); }catch(e){ alert(e.message||"Gick inte"); } }
+  async function removeMember(id){ try{ await callRpc(token,"admin_remove_member",{target:id}); setProfiles(ps=>(ps||[]).filter(p=>p.id!==id)); }catch(e){ alert(e.message||"Gick inte"); } }
   async function create(){
     if(!email||!pw) return;
     setBusy(true); setMsg(null); setNeed(false);
@@ -3339,21 +3462,32 @@ function UserModal({token,user,name,uid,isAdmin,onName,backups=[],onDownloadBack
           </div>
           {isAdmin ? (
             <>
-              <div className="udivider">Användare &amp; godkännande</div>
+              <div className="udivider">Medlemmar</div>
               {pBusy && <div style={{color:"var(--dim)",fontSize:12}}>Laddar…</div>}
-              {profiles && profiles.length===0 && !pBusy && <div style={{color:"var(--dim)",fontSize:12}}>Inga användare än.</div>}
-              {profiles && profiles.map(p=>(
+              {profiles && profiles.length===0 && !pBusy && <div style={{color:"var(--dim)",fontSize:12}}>Inga medlemmar än.</div>}
+              {profiles && profiles.map(p=>{
+                const self=p.id===uid; const role=p.role||"member";
+                return (
                 <div key={p.id} className="urow">
                   <div style={{minWidth:0,flex:1}}>
-                    <div className="urow-mail">{p.email||p.id}{p.is_admin&&<span className="utag admin">admin</span>}</div>
-                    <div className={"urow-status "+(p.approved?"ok":"wait")}>{p.approved?"godkänd":"väntar"}</div>
+                    <div className="urow-mail">{p.name||p.email||p.id}{role!=="member"&&<span className="utag admin">{role==="owner"?"ägare":"admin"}</span>}{self&&<span className="utag">du</span>}</div>
+                    <div className={"urow-status "+(p.approved?"ok":"wait")}>{p.email||p.id} · {p.approved?"aktiv":"pausad"}</div>
                   </div>
-                  {!p.is_admin && (p.approved
-                    ? <button className="ubtn-revoke" onClick={()=>approve(p.id,false)}>Återkalla</button>
-                    : <button className="ubtn-approve" onClick={()=>approve(p.id,true)}>{Ico.check} Godkänn</button>)}
+                  {!self && role!=="owner" && (
+                    <div className="urow-acts">
+                      {p.approved
+                        ? <button className="ubtn-revoke" onClick={()=>setMember(p.id,{new_approved:false})}>Pausa</button>
+                        : <button className="ubtn-approve" onClick={()=>setMember(p.id,{new_approved:true})}>{Ico.check} Aktivera</button>}
+                      {role==="admin"
+                        ? <button className="ubtn-revoke" onClick={()=>setMember(p.id,{new_role:"member"})}>Ta bort admin</button>
+                        : <button className="ubtn-approve" onClick={()=>setMember(p.id,{new_role:"admin"})}>Gör till admin</button>}
+                      <button className="ubtn-revoke" title="Ta bort ur organisationen" onClick={()=>{ if(confirm("Ta bort "+(p.name||p.email||"medlemmen")+" ur organisationen?")) removeMember(p.id); }}>{Ico.trash}</button>
+                    </div>
+                  )}
                 </div>
-              ))}
-              <p style={{color:"var(--dim)",fontSize:11,margin:0,lineHeight:1.5}}>Nya kollegor registrerar sig själva på inloggningssidan. De kommer in först när du godkänt dem här. Varje användare ser bara sina egna poster.</p>
+                );
+              })}
+              <p style={{color:"var(--dim)",fontSize:11,margin:0,lineHeight:1.5}}>Kollegor går med via inbjudningskod. Här kan du pausa, göra till admin eller ta bort medlemmar. Ägaren kan inte ändras.</p>
             </>
           ) : (
             <p style={{color:"var(--dim)",fontSize:12,margin:0,lineHeight:1.5}}>Dina poster är privata för din organisation. Bjud in kollegor med en inbjudningskod (knappen ovan) så hamnar de i samma organisation.</p>
