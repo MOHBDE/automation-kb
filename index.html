@@ -544,7 +544,7 @@
   .conv:hover{background:var(--surface);}
   .conv.active{background:var(--accent-soft);}
   .conv.active::before{content:"";position:absolute;left:3px;top:50%;transform:translateY(-50%);width:3px;height:22px;border-radius:3px;background:var(--accent);}
-  .conv-av{width:42px;height:42px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--accent-soft);color:var(--accent);}
+  .conv-av{position:relative;width:42px;height:42px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--accent-soft);color:var(--accent);}
   .conv-av svg{width:20px;height:20px;}
   .conv-av:has(svg){background:rgba(45,212,191,.16);color:var(--accent2,#2dd4bf);}
   .conv-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
@@ -598,6 +598,36 @@
   .att-loc b,.att-file b{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .att-loc small,.att-file small{font-size:11.5px;color:var(--dim);margin-top:1px;}
   .bubble.me .att-loc,.bubble.me .att-file{background:rgba(0,0,0,.18);border-color:rgba(0,0,0,.18);}
+  .att-reply{display:flex;flex-direction:column;gap:1px;padding:6px 10px;margin-bottom:5px;border-left:3px solid var(--accent);background:var(--inset);border-radius:7px;max-width:250px;}
+  .att-reply b{font-size:12px;color:var(--accent);font-weight:600;}
+  .att-reply span{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bubble.me .att-reply{background:rgba(0,0,0,.18);border-left-color:rgba(255,255,255,.6);}
+  .bubble.me .att-reply b{color:#fff;}
+  .att-ref{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:12px;background:var(--inset);border:1px solid var(--line);color:var(--txt);margin-bottom:5px;max-width:250px;width:100%;cursor:pointer;font-family:var(--sans);text-align:left;}
+  .att-ref svg{width:22px;height:22px;flex-shrink:0;color:var(--accent);}
+  .att-ref span{display:flex;flex-direction:column;min-width:0;}
+  .att-ref b{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .att-ref small{font-size:11.5px;color:var(--dim);margin-top:1px;}
+  .att-ref:hover{border-color:var(--accent);}
+  .bubble.me .att-ref{background:rgba(0,0,0,.18);border-color:rgba(0,0,0,.18);}
+  .msg-reply{align-self:center;flex-shrink:0;width:30px;height:30px;border:none;background:transparent;color:var(--dim);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.35;transition:opacity .15s,background .15s;}
+  .msg-reply svg{width:16px;height:16px;}
+  .msg-reply:hover{opacity:1;background:var(--inset);color:var(--accent);}
+  .bubble-row.me .msg-reply{order:-1;}
+  .reply-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--inset);border-top:1px solid var(--line);}
+  .reply-q{flex:1;min-width:0;display:flex;flex-direction:column;border-left:3px solid var(--accent);padding-left:9px;}
+  .reply-q b{font-size:12px;color:var(--accent);font-weight:600;}
+  .reply-q span{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .reply-x{flex-shrink:0;width:30px;height:30px;border:none;background:transparent;color:var(--dim);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .reply-x svg{width:17px;height:17px;}
+  .reply-x:hover{background:var(--panel2);color:var(--txt);}
+  .onl-dot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#34d399;border:2.5px solid var(--panel);box-shadow:0 0 0 1px rgba(52,211,153,.4);}
+  .conv-prev.typing{color:var(--accent);font-style:italic;}
+  .typing-bubble{display:flex;align-items:center;gap:5px;padding:11px 14px;}
+  .typing-bubble .tdot{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:tbnce 1.2s infinite ease-in-out;}
+  .typing-bubble .tdot:nth-child(2){animation-delay:.18s;}
+  .typing-bubble .tdot:nth-child(3){animation-delay:.36s;}
+  @keyframes tbnce{0%,60%,100%{transform:translateY(0);opacity:.45;}30%{transform:translateY(-4px);opacity:1;}}
   @media(max-width:860px){
     .chat2{grid-template-columns:1fr;height:calc(100dvh - 150px);border:none;border-radius:0;background:none;box-shadow:none;}
     .chat2-list{border-right:none;background:none;}
@@ -845,7 +875,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.34.0";
+const APP_VERSION = "1.36.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1741,6 +1771,18 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     setRecentIds(prev=>{ const next=[entry.id, ...prev.filter(x=>x!==entry.id)].slice(0,12); try{ localStorage.setItem(recentKey, JSON.stringify(next)); }catch(e){} return next; });
   }
   function openDetail(entry){ pushRecent(entry); setDetail(entry); }
+  function openRef(kind,id){
+    if(kind==="alarm"){ setActiveView("larm"); return; }
+    if(kind==="station"){ setActiveStation(id); setActiveSystem("Alla"); setActiveCat("Alla"); setSearch(""); setActiveView("bibliotek"); return; }
+    const e=entries.find(x=>String(x.id)===String(id));
+    if(e){ openDetail(e); setActiveView("bibliotek"); } else { flash("Posten hittades inte"); }
+  }
+  async function shareToChat(ref){
+    try{
+      await sendMessageRow(token,{ sender_id:uid, sender_name:(name||user), recipient_id:null, body:"", attachments:[{type:"ref", kind:ref.kind, id:ref.id, title:ref.title}] });
+      setDetail(null); flash("Delad i Teamet-chatten"); setActiveView("chatt");
+    }catch(e){ alert(e.message); }
+  }
   function takeStationOffline(station){
     const inStation=entries.filter(e=>(e.station||"")===station);
     const ids=inStation.map(e=>e.id);
@@ -2036,7 +2078,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
             onOpen={openDetail} loadExamples={loadExamples} onOpenLarm={()=>setActiveView("larm")} alarmCount={alarms.length} />
         ) : activeView==="chatt" ? (
-          <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} />
+          <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} onOpenRef={openRef} />
         ) : activeView==="larm" ? (
           <LarmView alarms={alarms} onSave={saveAlarm} onDelete={deleteAlarm} />
         ) : (
@@ -2156,7 +2198,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       {showSys && <SystemModal systems={systems} counts={sysCounts} onAdd={addSystem} onRemove={removeSystem} onClose={()=>setShowSys(false)} />}
       {showCat && <CategoryModal categories={categories} counts={catCounts} builtins={CATEGORIES} onAdd={addCategory} onRemove={removeCategory} onClose={()=>setShowCat(false)} />}
       {showTrash && <TrashModal items={trash} onRestore={restoreEntry} onPurge={purgeEntry} onEmpty={emptyTrash} onClose={()=>setShowTrash(false)} />}
-      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} fav={isFav(detail.id)} onFav={()=>toggleFav(detail)} onExportPdf={()=>exportPostPdf(detail)} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={openDetail} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
+      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} fav={isFav(detail.id)} onFav={()=>toggleFav(detail)} onExportPdf={()=>exportPostPdf(detail)} onShare={()=>shareToChat({kind:"entry",id:detail.id,title:detail.title})} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={openDetail} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} uid={uid} isAdmin={isAdmin} onName={onName} backups={backups} onDownloadBackup={downloadBackup} onRestoreBackup={restoreBackup} onClose={()=>setShowUsers(false)} />}
     </div>
     {printData && <PrintView data={printData} />}
@@ -2367,7 +2409,7 @@ function Dashboard({entries,sysCounts,systems,topicCounts,codeCount,noteCount,pi
   );
 }
 
-function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,fav,onFav,onExportPdf,onRestore,onClose,onOpen,onEdit,onTag}){
+function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlineSaved,onToggleOffline,fav,onFav,onExportPdf,onShare,onRestore,onClose,onOpen,onEdit,onTag}){
   const color=catColor(entry.category);
   const sys=entry.system||"Ignition";
   const sysColor=colorForSys(sys);
@@ -2529,6 +2571,7 @@ function DetailModal({entry,entries,mine=true,token,uid,name,user,display,offlin
           <div className="foot-tools">
             <button className={"foot-mini"+(fav?" on":"")} onClick={onFav} title={fav?"Ta bort favorit":"Lägg till favorit"}>{Ico.star} {fav?"Favorit ✓":"Favorit"}</button>
             <button className="foot-mini" onClick={()=>setShowQR(true)} title="QR-kod">{Ico.qr} QR</button>
+            {onShare && <button className="foot-mini" onClick={onShare} title="Dela i Teamet-chatten">{Ico.users} Dela</button>}
             <button className="foot-mini" onClick={()=>exportEntriesPDF([entry], entry.title)} title="Exportera PDF">{Ico.report} PDF</button>
             <button className={"foot-mini"+(offlineSaved?" on":"")} onClick={onToggleOffline} title={offlineSaved?"Sparad offline":"Ta med offline"}>{Ico.down} {offlineSaved?"Offline ✓":"Offline"}</button>
             {mine && <button className="foot-mini" onClick={()=>hist===null?openHist():setHist(null)}>{Ico.undo} {hist===null?"Historik":"Dölj"}</button>}
@@ -2593,7 +2636,38 @@ function CompactRow({entry,mine=true,onOpen,onPin}){
     </div>
   );
 }
-function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
+function rtConnect({ topic, token, presenceMeta, onInsert, onPresence, onBroadcast }){
+  const url = SUPABASE_URL.replace(/^http/,"ws") + "/realtime/v1/websocket?apikey=" + encodeURIComponent(SUPABASE_KEY) + "&vsn=1.0.0";
+  let ws=null, hb=null, refN=1, joined=false, closed=false, reconnTimer=null;
+  function nextRef(){ return String(refN++); }
+  function rawSend(obj){ try{ if(ws&&ws.readyState===1) ws.send(JSON.stringify(obj)); }catch(e){} }
+  function push(event,payload){ rawSend({ topic, event, payload, ref: nextRef() }); }
+  function open(){
+    if(closed) return;
+    try{ ws=new WebSocket(url); }catch(e){ reconnTimer=setTimeout(open,3000); return; }
+    ws.onopen=function(){
+      joined=false;
+      push("phx_join",{ config:{ broadcast:{ self:false, ack:false }, presence:{ key:(presenceMeta&&presenceMeta.user_id)||"" }, postgres_changes:[{ event:"INSERT", schema:"public", table:"messages" }] }, access_token: token });
+      clearInterval(hb); hb=setInterval(function(){ rawSend({ topic:"phoenix", event:"heartbeat", payload:{}, ref: nextRef() }); }, 25000);
+    };
+    ws.onmessage=function(ev){
+      let m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+      if(m.event==="phx_reply" && !joined && m.payload && m.payload.status==="ok"){ joined=true; if(presenceMeta) push("presence",{ type:"presence", event:"track", payload: presenceMeta }); return; }
+      if(m.event==="postgres_changes"){ const d=m.payload&&m.payload.data; const rec=d&&(d.record||d.new); if(rec&&onInsert) onInsert(rec); return; }
+      if(m.event==="presence_state"){ if(onPresence){ try{ onPresence(Object.keys(m.payload||{}), null); }catch(e){} } return; }
+      if(m.event==="presence_diff"){ if(onPresence) onPresence(null, m.payload||{}); return; }
+      if(m.event==="broadcast"){ const p=m.payload||{}; if(onBroadcast) onBroadcast(p.event, p.payload); return; }
+    };
+    ws.onclose=function(){ clearInterval(hb); joined=false; if(!closed){ clearTimeout(reconnTimer); reconnTimer=setTimeout(open,2500); } };
+    ws.onerror=function(){ try{ ws.close(); }catch(e){} };
+  }
+  open();
+  return {
+    close:function(){ closed=true; clearInterval(hb); clearTimeout(reconnTimer); try{ ws&&ws.close(); }catch(e){} },
+    sendTyping:function(meta){ if(joined) push("broadcast",{ type:"broadcast", event:"typing", payload: meta }); }
+  };
+}
+function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpenRef}){
   const [members,setMembers]=useState([]);
   const mentionNames=useMemo(()=>[...members.map(x=>x.name||x.email||""), display||""].filter(Boolean),[members,display]);
   const mentionHits=mention===null?[]:members.filter(x=>{ const n=(x.name||x.email||"").toLowerCase(); return n && n.indexOf(mention)>=0; }).slice(0,6);
@@ -2601,7 +2675,13 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   const [msgs,setMsgs]=useState([]);
   const [text,setText]=useState("");
   const [mention,setMention]=useState(null);
-  function onComposeChange(v){ setText(v); const mm=v.match(/@([\wåäöÅÄÖ]*)$/); setMention(mm?mm[1].toLowerCase():null); }
+  const [replyTo,setReplyTo]=useState(null);
+  function onComposeChange(v){
+    setText(v);
+    const mm=v.match(/@([\wåäöÅÄÖ]*)$/); setMention(mm?mm[1].toLowerCase():null);
+    const nowt=Date.now();
+    if(rtRef.current && v && nowt-lastTyping.current>1800){ lastTyping.current=nowt; rtRef.current.sendTyping({ from:uid, to:(conv==="team"?null:conv), name:(name||user||"") }); }
+  }
   function pickMention(nm){ setText(t=>t.replace(/@[\wåäöÅÄÖ]*$/, "@"+nm+" ")); setMention(null); }
   const [loading,setLoading]=useState(true);
   const [sending,setSending]=useState(false);
@@ -2616,6 +2696,11 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
   const [convHist,setConvHist]=useState(function(){ try{ return JSON.parse(localStorage.getItem(convKey)||"[]"); }catch(e){ return []; } });
   function rememberConv(id){ if(!id||id==="team") return; setConvHist(prev=>{ const n=[id,...prev.filter(x=>x!==id)]; try{ localStorage.setItem(convKey, JSON.stringify(n)); }catch(e){} return n; }); }
   const endRef=useRef(null);
+  const [online,setOnline]=useState(()=>new Set());
+  const [typing,setTyping]=useState(null);
+  const [orgId,setOrgId]=useState(null);
+  const convRef=useRef(conv); useEffect(()=>{ convRef.current=conv; },[conv]);
+  const rtRef=useRef(null); const typingTimer=useRef(null); const lastTyping=useRef(0);
 
   useEffect(()=>{ listMembers(token).then(ms=>setMembers((ms||[]).filter(m=>m.id!==uid))); },[]);
   useEffect(()=>{
@@ -2631,6 +2716,29 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
     return ()=>{ stop=true; clearInterval(iv); };
   },[conv, token, uid]);
   useEffect(()=>{ if(endRef.current) endRef.current.scrollIntoView(); },[msgs.length, mobileThread, conv]);
+  useEffect(()=>{ let stop=false; (async()=>{
+    try{ const r=await fetch(SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(uid)+"&select=org_id", { headers:{ apikey:SUPABASE_KEY, Authorization:"Bearer "+token } }); const j=await r.json(); if(!stop && j&&j[0]) setOrgId(j[0].org_id||null); }catch(e){}
+  })(); return ()=>{ stop=true; }; },[token, uid]);
+  useEffect(()=>{
+    if(!token||!uid) return;
+    const topic="realtime:chat-"+(orgId||("solo-"+uid));
+    const rt=rtConnect({
+      topic, token,
+      presenceMeta:{ user_id:uid, name:(name||user||"") },
+      onInsert:(rec)=>{
+        const ck=rec.recipient_id==null ? "team" : (rec.sender_id===uid ? rec.recipient_id : rec.sender_id);
+        setOverview(o=>({ ...o, [ck]:{ body:(rec.body||attachPreview(rec)), at:rec.created_at||new Date().toISOString(), fromMe:rec.sender_id===uid } }));
+        if(ck===convRef.current){
+          setMsgs(x=> x.some(z=>z.id===rec.id) ? x : [...x, rec]);
+          if(rec.sender_id!==uid && onSeen) onSeen(ck);
+        }
+      },
+      onPresence:(keys,diff)=>{ setOnline(prev=>{ let s=keys!==null?new Set(keys):new Set(prev); if(diff){ Object.keys(diff.joins||{}).forEach(k=>s.add(k)); Object.keys(diff.leaves||{}).forEach(k=>s.delete(k)); } return s; }); },
+      onBroadcast:(ev,p)=>{ if(ev!=="typing"||!p||p.from===uid) return; const ck=(p.to==null)?"team":(p.to===uid?p.from:null); if(ck===null||ck!==convRef.current) return; setTyping({conv:ck,name:p.name||"Någon"}); clearTimeout(typingTimer.current); typingTimer.current=setTimeout(()=>setTyping(null),3500); }
+    });
+    rtRef.current=rt;
+    return ()=>{ try{ rt.close(); }catch(e){} rtRef.current=null; clearTimeout(typingTimer.current); setTyping(null); };
+  },[token, uid, orgId]);
 
   function memberLabel(m){ return ((m&&m.name&&m.name.trim()) || ((m&&m.email)||"").split("@")[0]) || "medlem"; }
   function memberById(id){ return members.find(x=>x.id===id); }
@@ -2660,7 +2768,8 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
     const b=text.trim(); if((!b&&!attaching)||sending) return;
     setSending(true);
     const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:b };
-    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); rememberConv(conv); setOverview(o=>({...o,[conv]:{body:b,at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}})); }
+    if(replyTo) row.attachments=[{type:"reply", name:replyTo.name, snippet:replyTo.snippet}];
+    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); setReplyTo(null); rememberConv(conv); setOverview(o=>({...o,[conv]:{body:b,at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}})); }
     catch(e){ alert(e.message); }
     setSending(false);
   }
@@ -2709,7 +2818,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
     const prev = ov ? ((ov.fromMe?"Du: ":"")+ov.body) : (sub||"");
     return (
       <button className={"conv"+(conv===id?" active":"")+(unread?" unread":"")} onClick={()=>openConv(id)}>
-        <span className="conv-av" style={id==="team"?{}:avStyle(id)}>{id==="team"?Ico.users:initials(id)}</span>
+        <span className="conv-av" style={id==="team"?{}:avStyle(id)}>{id==="team"?Ico.users:initials(id)}{id!=="team"&&online.has(id)&&<i className="onl-dot"></i>}</span>
         <span className="conv-main">
           <span className="conv-name">{labelFor(id)}</span>
           <span className="conv-prev">{prev}</span>
@@ -2756,10 +2865,14 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
       <div className="chat2-thread">
         <div className="chat2-thhead">
           <button className="chat-back" onClick={()=>setMobileThread(false)} title="Tillbaka">{Ico.chevL}</button>
-          <span className="conv-av" style={conv==="team"?{}:avStyle(conv)}>{conv==="team"?Ico.users:initials(conv)}</span>
+          <span className="conv-av" style={conv==="team"?{}:avStyle(conv)}>{conv==="team"?Ico.users:initials(conv)}{conv!=="team"&&online.has(conv)&&<i className="onl-dot"></i>}</span>
           <div className="chat2-thtitle">
             <span className="conv-name">{labelFor(conv)}</span>
-            <span className="conv-prev">{conv==="team"?((members.length+1)+" medlemmar"):((memberById(conv)&&memberById(conv).email)||"Privat konversation")}</span>
+            <span className={"conv-prev"+(typing&&typing.conv===conv?" typing":"")}>{
+              typing&&typing.conv===conv ? (typing.name+" skriver…")
+              : conv==="team" ? ((members.length+1)+" medlemmar")
+              : (online.has(conv) ? "online" : ((memberById(conv)&&memberById(conv).email)||"Privat konversation"))
+            }</span>
           </div>
         </div>
         <div className="chat-msgs">
@@ -2780,6 +2893,8 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
                      <div className={"bubble"+(mine?" me":"")}>
                        {showName && <div className="bubble-name">{nameForSender(m)}</div>}
                        {(m.attachments||[]).map((a,ai)=>{
+                         if(a.type==="reply") return <div key={ai} className="att-reply"><b>{a.name}</b><span>{a.snippet}</span></div>;
+                         if(a.type==="ref") return <button key={ai} className="att-ref" onClick={()=>onOpenRef&&onOpenRef(a.kind,a.id)}>{a.kind==="alarm"?Ico.bell:a.kind==="station"?Ico.pin:Ico.note}<span><b>{a.title||"Post"}</b><small>{a.kind==="alarm"?"Larmkod":a.kind==="station"?"Station":"Kunskapspost"}</small></span></button>;
                          if(a.type==="image") return <a key={ai} href={a.url} target="_blank" rel="noopener" className="att-img"><img src={a.url} alt={a.name||"bild"} loading="lazy" /></a>;
                          if(a.type==="location") return <a key={ai} href={"https://www.google.com/maps?q="+a.lat+","+a.lng} target="_blank" rel="noopener" className="att-loc">{Ico.pin}<span><b>Delad plats</b><small>{a.lat}, {a.lng}</small></span></a>;
                          return <a key={ai} href={a.url} target="_blank" rel="noopener" download={a.name} className="att-file">{Ico.file2||Ico.report}<span><b>{a.name||"Fil"}</b><small>{fmtBytes(a.size)}</small></span></a>;
@@ -2787,13 +2902,19 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen}){
                        {m.body && <div className="bubble-body">{renderMentions(m.body, mentionNames)}</div>}
                        <div className="bubble-time">{fmtTime(m.created_at)}</div>
                      </div>
+                     <button className="msg-reply" title="Svara" onClick={()=>setReplyTo({mid:m.id, name:nameForSender(m), snippet:((m.body||attachPreview(m)||"").slice(0,90))})}>{Ico.undo}</button>
                    </div>
                  );
                });
                return out;
              })()}
+          {typing&&typing.conv===conv && <div className="bubble-row"><div className="bubble typing-bubble"><span className="tdot"></span><span className="tdot"></span><span className="tdot"></span></div></div>}
           <div ref={endRef}></div>
         </div>
+        {replyTo && <div className="reply-bar">
+          <div className="reply-q"><b>Svar till {replyTo.name}</b><span>{replyTo.snippet}</span></div>
+          <button className="reply-x" onClick={()=>setReplyTo(null)} title="Avbryt">{Ico.x}</button>
+        </div>}
         <div className="chat-input">
           <input ref={imgInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>onPickFile(e,true)} />
           <input ref={fileInputRef} type="file" style={{display:"none"}} onChange={e=>onPickFile(e,false)} />
