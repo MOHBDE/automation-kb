@@ -610,10 +610,20 @@
   .att-ref small{font-size:11.5px;color:var(--dim);margin-top:1px;}
   .att-ref:hover{border-color:var(--accent);}
   .bubble.me .att-ref{background:rgba(0,0,0,.18);border-color:rgba(0,0,0,.18);}
-  .msg-reply{align-self:center;flex-shrink:0;width:30px;height:30px;border:none;background:transparent;color:var(--dim);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.35;transition:opacity .15s,background .15s;}
-  .msg-reply svg{width:16px;height:16px;}
-  .msg-reply:hover{opacity:1;background:var(--inset);color:var(--accent);}
-  .bubble-row.me .msg-reply{order:-1;}
+  .msg-actions{display:flex;align-items:center;gap:1px;align-self:center;flex-shrink:0;}
+  .msg-act{width:28px;height:28px;border:none;background:transparent;color:var(--dim);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.32;transition:opacity .15s,background .15s,color .15s;}
+  .msg-act svg{width:15px;height:15px;}
+  .msg-act:hover{opacity:1;background:var(--inset);color:var(--accent);}
+  .msg-act.danger:hover{color:#f87171;}
+  .bubble-row.me .msg-actions{order:-1;}
+  .edited{color:var(--dim);font-size:10.5px;font-style:italic;}
+  .share-modal{max-width:440px;}
+  .share-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--line);background:var(--inset);border-radius:13px;cursor:pointer;color:var(--txt);text-align:left;margin-bottom:8px;font-family:var(--sans);}
+  .share-row:hover{border-color:var(--accent);}
+  .share-row .conv-av{width:38px;height:38px;}
+  .share-main{display:flex;flex-direction:column;min-width:0;}
+  .share-main b{font-size:14px;font-weight:600;}
+  .share-main small{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .reply-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--inset);border-top:1px solid var(--line);}
   .reply-q{flex:1;min-width:0;display:flex;flex-direction:column;border-left:3px solid var(--accent);padding-left:9px;}
   .reply-q b{font-size:12px;color:var(--accent);font-weight:600;}
@@ -875,7 +885,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.36.0";
+const APP_VERSION = "1.36.1";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1110,6 +1120,16 @@ async function sendMessageRow(token, row){
   const r = await fetch(msgBase, {method:"POST", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify([row])});
   if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte skicka ("+r.status+")")); }
   return (await r.json())[0];
+}
+async function editMessageRow(token, id, body){
+  const r = await fetch(msgBase + "?id=eq." + encodeURIComponent(id), {method:"PATCH", headers:{...dataHeaders(token), Prefer:"return=representation"}, body: JSON.stringify({ body: body, edited_at: new Date().toISOString() })});
+  if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte redigera ("+r.status+")")); }
+  try{ return (await r.json())[0]; }catch(e){ return null; }
+}
+async function deleteMessageRow(token, id){
+  const r = await fetch(msgBase + "?id=eq." + encodeURIComponent(id), {method:"DELETE", headers: dataHeaders(token)});
+  if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte radera ("+r.status+")")); }
+  return true;
 }
 const CHAT_BUCKET = "chat-files";
 async function uploadChatFile(token, file){
@@ -1692,6 +1712,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   const [editing,setEditing]=useState(null);
   const [copiedId,setCopiedId]=useState(null);
   const [detail,setDetail]=useState(null);
+  const [sharing,setSharing]=useState(null);
+  const [chatTarget,setChatTarget]=useState(null);
   const [toast,setToast]=useState("");
   const [online,setOnline]=useState(typeof navigator==="undefined"?true:navigator.onLine!==false);
   const fileRef=useRef(null);
@@ -1777,10 +1799,11 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
     const e=entries.find(x=>String(x.id)===String(id));
     if(e){ openDetail(e); setActiveView("bibliotek"); } else { flash("Posten hittades inte"); }
   }
-  async function shareToChat(ref){
+  async function shareToChat(ref, target){
+    const recip=(!target||target==="team")?null:target;
     try{
-      await sendMessageRow(token,{ sender_id:uid, sender_name:(name||user), recipient_id:null, body:"", attachments:[{type:"ref", kind:ref.kind, id:ref.id, title:ref.title}] });
-      setDetail(null); flash("Delad i Teamet-chatten"); setActiveView("chatt");
+      await sendMessageRow(token,{ sender_id:uid, sender_name:(name||user), recipient_id:recip, body:"", attachments:[{type:"ref", kind:ref.kind, id:ref.id, title:ref.title}] });
+      setSharing(null); setDetail(null); setChatTarget({ id:(recip||"team"), ts:Date.now() }); flash(recip?"Delad privat":"Delad i Teamet-chatten"); setActiveView("chatt");
     }catch(e){ alert(e.message); }
   }
   function takeStationOffline(station){
@@ -2078,7 +2101,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
             onOpen={openDetail} loadExamples={loadExamples} onOpenLarm={()=>setActiveView("larm")} alarmCount={alarms.length} />
         ) : activeView==="chatt" ? (
-          <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} onOpenRef={openRef} />
+          <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} onOpenRef={openRef} openConv={chatTarget} />
         ) : activeView==="larm" ? (
           <LarmView alarms={alarms} onSave={saveAlarm} onDelete={deleteAlarm} />
         ) : (
@@ -2198,7 +2221,8 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
       {showSys && <SystemModal systems={systems} counts={sysCounts} onAdd={addSystem} onRemove={removeSystem} onClose={()=>setShowSys(false)} />}
       {showCat && <CategoryModal categories={categories} counts={catCounts} builtins={CATEGORIES} onAdd={addCategory} onRemove={removeCategory} onClose={()=>setShowCat(false)} />}
       {showTrash && <TrashModal items={trash} onRestore={restoreEntry} onPurge={purgeEntry} onEmpty={emptyTrash} onClose={()=>setShowTrash(false)} />}
-      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} fav={isFav(detail.id)} onFav={()=>toggleFav(detail)} onExportPdf={()=>exportPostPdf(detail)} onShare={()=>shareToChat({kind:"entry",id:detail.id,title:detail.title})} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={openDetail} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
+      {sharing && <ShareModal token={token} uid={uid} title={sharing.title} onPick={t=>shareToChat(sharing, t)} onClose={()=>setSharing(null)} />}
+      {detail && <DetailModal entry={detail} entries={entries} mine={detail.user_id===uid||!detail.user_id} token={token} uid={uid} name={name} user={user} display={display} offlineSaved={isOfflineSaved(detail.id)} onToggleOffline={()=>toggleOffline(detail)} fav={isFav(detail.id)} onFav={()=>toggleFav(detail)} onExportPdf={()=>exportPostPdf(detail)} onShare={()=>setSharing({kind:"entry",id:detail.id,title:detail.title})} onRestore={restoreVersion} onClose={()=>setDetail(null)} onOpen={openDetail} onEdit={e=>{setDetail(null);setEditing(e);}} onTag={t=>{setDetail(null);toggleTag(t);setActiveView("bibliotek");}} />}
       {showUsers && <UserModal token={token} user={user} name={name} uid={uid} isAdmin={isAdmin} onName={onName} backups={backups} onDownloadBackup={downloadBackup} onRestoreBackup={restoreBackup} onClose={()=>setShowUsers(false)} />}
     </div>
     {printData && <PrintView data={printData} />}
@@ -2636,7 +2660,7 @@ function CompactRow({entry,mine=true,onOpen,onPin}){
     </div>
   );
 }
-function rtConnect({ topic, token, presenceMeta, onInsert, onPresence, onBroadcast }){
+function rtConnect({ topic, token, onInsert, onBroadcast, onJoin }){
   const url = SUPABASE_URL.replace(/^http/,"ws") + "/realtime/v1/websocket?apikey=" + encodeURIComponent(SUPABASE_KEY) + "&vsn=1.0.0";
   let ws=null, hb=null, refN=1, joined=false, closed=false, reconnTimer=null;
   function nextRef(){ return String(refN++); }
@@ -2647,15 +2671,13 @@ function rtConnect({ topic, token, presenceMeta, onInsert, onPresence, onBroadca
     try{ ws=new WebSocket(url); }catch(e){ reconnTimer=setTimeout(open,3000); return; }
     ws.onopen=function(){
       joined=false;
-      push("phx_join",{ config:{ broadcast:{ self:false, ack:false }, presence:{ key:(presenceMeta&&presenceMeta.user_id)||"" }, postgres_changes:[{ event:"INSERT", schema:"public", table:"messages" }] }, access_token: token });
+      push("phx_join",{ config:{ broadcast:{ self:false, ack:false }, postgres_changes:[{ event:"INSERT", schema:"public", table:"messages" }] }, access_token: token });
       clearInterval(hb); hb=setInterval(function(){ rawSend({ topic:"phoenix", event:"heartbeat", payload:{}, ref: nextRef() }); }, 25000);
     };
     ws.onmessage=function(ev){
       let m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
-      if(m.event==="phx_reply" && !joined && m.payload && m.payload.status==="ok"){ joined=true; if(presenceMeta) push("presence",{ type:"presence", event:"track", payload: presenceMeta }); return; }
+      if(m.event==="phx_reply" && !joined && m.payload && m.payload.status==="ok"){ joined=true; if(onJoin){ try{ onJoin(); }catch(e){} } return; }
       if(m.event==="postgres_changes"){ const d=m.payload&&m.payload.data; const rec=d&&(d.record||d.new); if(rec&&onInsert) onInsert(rec); return; }
-      if(m.event==="presence_state"){ if(onPresence){ try{ onPresence(Object.keys(m.payload||{}), null); }catch(e){} } return; }
-      if(m.event==="presence_diff"){ if(onPresence) onPresence(null, m.payload||{}); return; }
       if(m.event==="broadcast"){ const p=m.payload||{}; if(onBroadcast) onBroadcast(p.event, p.payload); return; }
     };
     ws.onclose=function(){ clearInterval(hb); joined=false; if(!closed){ clearTimeout(reconnTimer); reconnTimer=setTimeout(open,2500); } };
@@ -2663,11 +2685,13 @@ function rtConnect({ topic, token, presenceMeta, onInsert, onPresence, onBroadca
   }
   open();
   return {
+    isJoined:function(){ return joined; },
     close:function(){ closed=true; clearInterval(hb); clearTimeout(reconnTimer); try{ ws&&ws.close(); }catch(e){} },
+    bcast:function(event,payload){ if(joined) push("broadcast",{ type:"broadcast", event:event, payload:payload }); },
     sendTyping:function(meta){ if(joined) push("broadcast",{ type:"broadcast", event:"typing", payload: meta }); }
   };
 }
-function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpenRef}){
+function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpenRef, openConv}){
   const [members,setMembers]=useState([]);
   const mentionNames=useMemo(()=>[...members.map(x=>x.name||x.email||""), display||""].filter(Boolean),[members,display]);
   const mentionHits=mention===null?[]:members.filter(x=>{ const n=(x.name||x.email||"").toLowerCase(); return n && n.indexOf(mention)>=0; }).slice(0,6);
@@ -2676,6 +2700,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   const [text,setText]=useState("");
   const [mention,setMention]=useState(null);
   const [replyTo,setReplyTo]=useState(null);
+  const [editingMsg,setEditingMsg]=useState(null);
   function onComposeChange(v){
     setText(v);
     const mm=v.match(/@([\wåäöÅÄÖ]*)$/); setMention(mm?mm[1].toLowerCase():null);
@@ -2700,7 +2725,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   const [typing,setTyping]=useState(null);
   const [orgId,setOrgId]=useState(null);
   const convRef=useRef(conv); useEffect(()=>{ convRef.current=conv; },[conv]);
-  const rtRef=useRef(null); const typingTimer=useRef(null); const lastTyping=useRef(0);
+  const rtRef=useRef(null); const typingTimer=useRef(null); const lastTyping=useRef(0); const seenRef=useRef({});
 
   useEffect(()=>{ listMembers(token).then(ms=>setMembers((ms||[]).filter(m=>m.id!==uid))); },[]);
   useEffect(()=>{
@@ -2715,6 +2740,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
     tick(); const iv=setInterval(tick, 4000);
     return ()=>{ stop=true; clearInterval(iv); };
   },[conv, token, uid]);
+  useEffect(()=>{ if(openConv&&openConv.id){ setConv(openConv.id); setMobileThread(true); if(openConv.id!=="team") rememberConv(openConv.id); } },[openConv]);
   useEffect(()=>{ if(endRef.current) endRef.current.scrollIntoView(); },[msgs.length, mobileThread, conv]);
   useEffect(()=>{ let stop=false; (async()=>{
     try{ const r=await fetch(SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(uid)+"&select=org_id", { headers:{ apikey:SUPABASE_KEY, Authorization:"Bearer "+token } }); const j=await r.json(); if(!stop && j&&j[0]) setOrgId(j[0].org_id||null); }catch(e){}
@@ -2722,9 +2748,11 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   useEffect(()=>{
     if(!token||!uid) return;
     const topic="realtime:chat-"+(orgId||("solo-"+uid));
+    const me={ from:uid, name:(name||user||"") };
+    function recompute(){ const now=Date.now(); const s=new Set(); Object.keys(seenRef.current).forEach(k=>{ if(now-seenRef.current[k]<30000) s.add(k); else delete seenRef.current[k]; }); setOnline(s); }
     const rt=rtConnect({
       topic, token,
-      presenceMeta:{ user_id:uid, name:(name||user||"") },
+      onJoin:()=>{ try{ rt.bcast("hello", me); rt.bcast("alive", me); }catch(e){} },
       onInsert:(rec)=>{
         const ck=rec.recipient_id==null ? "team" : (rec.sender_id===uid ? rec.recipient_id : rec.sender_id);
         setOverview(o=>({ ...o, [ck]:{ body:(rec.body||attachPreview(rec)), at:rec.created_at||new Date().toISOString(), fromMe:rec.sender_id===uid } }));
@@ -2733,11 +2761,18 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
           if(rec.sender_id!==uid && onSeen) onSeen(ck);
         }
       },
-      onPresence:(keys,diff)=>{ setOnline(prev=>{ let s=keys!==null?new Set(keys):new Set(prev); if(diff){ Object.keys(diff.joins||{}).forEach(k=>s.add(k)); Object.keys(diff.leaves||{}).forEach(k=>s.delete(k)); } return s; }); },
-      onBroadcast:(ev,p)=>{ if(ev!=="typing"||!p||p.from===uid) return; const ck=(p.to==null)?"team":(p.to===uid?p.from:null); if(ck===null||ck!==convRef.current) return; setTyping({conv:ck,name:p.name||"Någon"}); clearTimeout(typingTimer.current); typingTimer.current=setTimeout(()=>setTyping(null),3500); }
+      onBroadcast:(ev,p)=>{
+        if(!p) return;
+        if(ev==="typing"){ if(p.from===uid) return; const ck=(p.to==null)?"team":(p.to===uid?p.from:null); if(ck===null||ck!==convRef.current) return; setTyping({conv:ck,name:p.name||"Någon"}); clearTimeout(typingTimer.current); typingTimer.current=setTimeout(()=>setTyping(null),3500); return; }
+        if(ev==="hello"){ if(p.from&&p.from!==uid){ seenRef.current[p.from]=Date.now(); recompute(); } try{ rt.bcast("alive", me); }catch(e){} return; }
+        if(ev==="alive"){ if(p.from&&p.from!==uid){ seenRef.current[p.from]=Date.now(); recompute(); } return; }
+        if(ev==="bye"){ if(p.from){ delete seenRef.current[p.from]; recompute(); } return; }
+      }
     });
     rtRef.current=rt;
-    return ()=>{ try{ rt.close(); }catch(e){} rtRef.current=null; clearTimeout(typingTimer.current); setTyping(null); };
+    const aliveIv=setInterval(()=>{ try{ rt.bcast("alive", me); }catch(e){} }, 12000);
+    const pruneIv=setInterval(recompute, 5000);
+    return ()=>{ try{ rt.bcast("bye",{from:uid}); }catch(e){} try{ rt.close(); }catch(e){} rtRef.current=null; clearInterval(aliveIv); clearInterval(pruneIv); clearTimeout(typingTimer.current); setTyping(null); seenRef.current={}; setOnline(new Set()); };
   },[token, uid, orgId]);
 
   function memberLabel(m){ return ((m&&m.name&&m.name.trim()) || ((m&&m.email)||"").split("@")[0]) || "medlem"; }
@@ -2765,13 +2800,28 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   })();
 
   async function send(){
-    const b=text.trim(); if((!b&&!attaching)||sending) return;
+    const b=text.trim();
+    if(editingMsg){
+      if(!b||sending) return;
+      setSending(true);
+      try{ await editMessageRow(token, editingMsg.id, b); setMsgs(x=>x.map(z=>z.id===editingMsg.id?{...z, body:b, edited_at:new Date().toISOString()}:z)); setEditingMsg(null); setText(""); }
+      catch(e){ alert(e.message); }
+      setSending(false); return;
+    }
+    if((!b&&!attaching)||sending) return;
     setSending(true);
     const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:b };
     if(replyTo) row.attachments=[{type:"reply", name:replyTo.name, snippet:replyTo.snippet}];
     try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); setReplyTo(null); rememberConv(conv); setOverview(o=>({...o,[conv]:{body:b,at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}})); }
     catch(e){ alert(e.message); }
     setSending(false);
+  }
+  function startEdit(m){ setReplyTo(null); setEditingMsg({id:m.id, body:m.body||""}); setText(m.body||""); }
+  function cancelEdit(){ setEditingMsg(null); setText(""); }
+  async function deleteMsg(m){
+    if(!window.confirm("Radera meddelandet?")) return;
+    try{ await deleteMessageRow(token, m.id); setMsgs(x=>x.filter(z=>z.id!==m.id)); }
+    catch(e){ alert(e.message); }
   }
   async function sendAttachment(att, bodyText){
     const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:bodyText||"", attachments:[att] };
@@ -2900,9 +2950,13 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
                          return <a key={ai} href={a.url} target="_blank" rel="noopener" download={a.name} className="att-file">{Ico.file2||Ico.report}<span><b>{a.name||"Fil"}</b><small>{fmtBytes(a.size)}</small></span></a>;
                        })}
                        {m.body && <div className="bubble-body">{renderMentions(m.body, mentionNames)}</div>}
-                       <div className="bubble-time">{fmtTime(m.created_at)}</div>
+                       <div className="bubble-time">{fmtTime(m.created_at)}{m.edited_at && <span className="edited"> · ändrad</span>}</div>
                      </div>
-                     <button className="msg-reply" title="Svara" onClick={()=>setReplyTo({mid:m.id, name:nameForSender(m), snippet:((m.body||attachPreview(m)||"").slice(0,90))})}>{Ico.undo}</button>
+                     <div className="msg-actions">
+                       <button className="msg-act" title="Svara" onClick={()=>{ setEditingMsg(null); setReplyTo({mid:m.id, name:nameForSender(m), snippet:((m.body||attachPreview(m)||"").slice(0,90))}); }}>{Ico.undo}</button>
+                       {mine && m.body && <button className="msg-act" title="Redigera" onClick={()=>startEdit(m)}>{Ico.edit}</button>}
+                       {mine && <button className="msg-act danger" title="Radera" onClick={()=>deleteMsg(m)}>{Ico.trash}</button>}
+                     </div>
                    </div>
                  );
                });
@@ -2911,7 +2965,10 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
           {typing&&typing.conv===conv && <div className="bubble-row"><div className="bubble typing-bubble"><span className="tdot"></span><span className="tdot"></span><span className="tdot"></span></div></div>}
           <div ref={endRef}></div>
         </div>
-        {replyTo && <div className="reply-bar">
+        {editingMsg ? <div className="reply-bar">
+          <div className="reply-q"><b>{Ico.edit} Redigerar meddelande</b><span>Ändra texten och tryck skicka</span></div>
+          <button className="reply-x" onClick={cancelEdit} title="Avbryt">{Ico.x}</button>
+        </div> : replyTo && <div className="reply-bar">
           <div className="reply-q"><b>Svar till {replyTo.name}</b><span>{replyTo.snippet}</span></div>
           <button className="reply-x" onClick={()=>setReplyTo(null)} title="Avbryt">{Ico.x}</button>
         </div>}
@@ -2966,6 +3023,36 @@ function Checklist({entry, interactive=true}){
   );
 }
 
+function ShareModal({token, uid, title, onPick, onClose}){
+  const [members,setMembers]=useState([]);
+  const [q,setQ]=useState("");
+  useEffect(()=>{ let stop=false; listMembers(token).then(ms=>{ if(!stop) setMembers((ms||[]).filter(m=>m.id!==uid)); }); return ()=>{ stop=true; }; },[]);
+  function lbl(m){ return (m.name&&m.name.trim())||((m.email||"").split("@")[0])||"medlem"; }
+  const shown=members.filter(m=>{ const s=(lbl(m)+" "+(m.email||"")).toLowerCase(); return s.indexOf(q.toLowerCase())>=0; });
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal share-modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-head"><h2>Dela "{title}"</h2><button className="x" onClick={onClose}>{Ico.x}</button></div>
+        <div className="modal-body">
+          <button className="share-row" onClick={()=>onPick("team")}>
+            <span className="conv-av">{Ico.users}</span>
+            <span className="share-main"><b>Teamet</b><small>Alla i teamet ser den</small></span>
+          </button>
+          <div className="convs-sec">Privat till en kollega</div>
+          <div className="chat-search" style={{margin:"0 0 8px"}}>{Ico.search}
+            <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Sök kollega…" />
+            {q && <button className="chat-search-x" onClick={()=>setQ("")}>{Ico.x}</button>}
+          </div>
+          {shown.length===0 ? <div className="chat-hint">{members.length===0?"Inga andra medlemmar än.":"Ingen matchar."}</div>
+          : shown.map(m=><button key={m.id} className="share-row" onClick={()=>onPick(m.id)}>
+              <span className="conv-av">{lbl(m).slice(0,2).toUpperCase()}</span>
+              <span className="share-main"><b>{lbl(m)}</b><small>{m.email}</small></span>
+            </button>)}
+        </div>
+      </div>
+    </div>
+  );
+}
 function QRModal({entry,onClose}){
   const ref=useRef(null);
   const url=postUrl(entry.id);
