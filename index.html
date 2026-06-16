@@ -590,7 +590,7 @@
   .att-menu button{display:flex;align-items:center;gap:11px;padding:11px 13px;border:none;background:transparent;color:var(--txt);font-family:var(--sans);font-size:14px;border-radius:9px;cursor:pointer;text-align:left;width:100%;}
   .att-menu button:hover{background:var(--inset);}
   .att-menu button svg{width:18px;height:18px;color:var(--accent);}
-  .att-img{display:block;max-width:220px;border-radius:13px;overflow:hidden;margin-bottom:5px;}
+  .att-img{display:block;max-width:220px;border-radius:13px;overflow:hidden;margin-bottom:5px;padding:0;border:none;background:none;cursor:pointer;}
   .att-img img{display:block;width:100%;height:auto;}
   .att-loc,.att-file{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:12px;background:var(--inset);border:1px solid var(--line);color:var(--txt);text-decoration:none;margin-bottom:5px;max-width:250px;}
   .att-loc svg,.att-file svg{width:22px;height:22px;flex-shrink:0;color:var(--accent);}
@@ -610,11 +610,48 @@
   .att-ref small{font-size:11.5px;color:var(--dim);margin-top:1px;}
   .att-ref:hover{border-color:var(--accent);}
   .bubble.me .att-ref{background:rgba(0,0,0,.18);border-color:rgba(0,0,0,.18);}
-  .msg-actions{display:flex;align-items:center;gap:1px;align-self:center;flex-shrink:0;}
+  .msg-actions{display:flex;align-items:center;gap:1px;align-self:center;flex-shrink:0;position:relative;}
+  .chat-msgsearch{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel);}
+  .chat-msgsearch svg{width:16px;height:16px;color:var(--dim);flex-shrink:0;}
+  .chat-msgsearch input{flex:1;border:none;background:transparent;color:var(--txt);font-size:14px;outline:none;font-family:var(--sans);}
+  .rx-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+  .rx-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:11px;border:1px solid var(--line);background:var(--inset);color:var(--txt);font-size:12px;cursor:pointer;line-height:1.55;}
+  .rx-chip.mine{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+  .bubble.me .rx-chip{background:rgba(0,0,0,.18);border-color:rgba(0,0,0,.2);color:#fff;}
+  .msg-act.rx-add span{font-size:16px;line-height:1;}
+  .rx-pick{position:absolute;bottom:34px;right:0;display:flex;gap:2px;padding:5px 6px;background:var(--panel);border:1px solid var(--line-strong);border-radius:13px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:20;}
+  .bubble-row.me .rx-pick{right:auto;left:0;}
+  .rx-pick button{border:none;background:none;font-size:21px;cursor:pointer;padding:3px 5px;border-radius:9px;line-height:1;}
+  .rx-pick button:hover{background:var(--inset);}
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .lightbox img{max-width:96vw;max-height:90vh;border-radius:8px;object-fit:contain;}
+  .lightbox-x{position:absolute;top:16px;right:16px;width:44px;height:44px;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .lightbox-x svg{width:22px;height:22px;}
+  .rcpt{color:var(--dim);font-weight:600;}
+  .rcpt.read{color:#34d399;}
+  .bubble.me .rcpt{color:rgba(255,255,255,.6);}
+  .bubble.me .rcpt.read{color:#bbf7d0;}
+  .ack-row{display:flex;align-items:center;gap:5px;margin-top:5px;font-size:11.5px;color:#34d399;font-weight:500;}
+  .ack-row svg{width:13px;height:13px;}
+  .bubble.me .ack-row{color:#bbf7d0;}
+  .msg-act.acked{opacity:1;color:#34d399;background:rgba(52,211,153,.14);}
   .msg-act{width:28px;height:28px;border:none;background:transparent;color:var(--dim);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.32;transition:opacity .15s,background .15s,color .15s;}
   .msg-act svg{width:15px;height:15px;}
   .msg-act:hover{opacity:1;background:var(--inset);color:var(--accent);}
   .msg-act.danger:hover{color:#f87171;}
+  .th-sel{flex-shrink:0;width:36px;height:36px;border:none;background:transparent;color:var(--dim);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .th-sel svg{width:19px;height:19px;}
+  .th-sel:hover{background:var(--inset);color:var(--accent);}
+  .th-del{flex-shrink:0;margin-left:auto;display:flex;align-items:center;gap:6px;padding:8px 13px;border:1px solid rgba(248,113,113,.45);background:rgba(248,113,113,.12);color:#f87171;border-radius:10px;font-family:var(--sans);font-size:13.5px;font-weight:600;cursor:pointer;}
+  .th-del svg{width:16px;height:16px;}
+  .th-del:disabled{opacity:.4;cursor:default;}
+  .bubble-row.selmode.me{cursor:pointer;}
+  .sel-check{align-self:center;flex-shrink:0;width:22px;height:22px;border-radius:50%;border:2px solid var(--line-strong);display:flex;align-items:center;justify-content:center;color:#fff;margin:0 5px;}
+  .sel-check svg{width:14px;height:14px;}
+  .sel-check.on{background:var(--accent);border-color:var(--accent);}
+  .sel-check.disabled{opacity:0;}
+  .bubble-row.selmode.me .sel-check{order:-1;}
+  .bubble-row.selected .bubble{outline:2px solid var(--accent);outline-offset:1px;}
   .bubble-row.me .msg-actions{order:-1;}
   .edited{color:var(--dim);font-size:10.5px;font-style:italic;}
   .share-modal{max-width:440px;}
@@ -885,7 +922,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.36.1";
+const APP_VERSION = "1.39.0";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -1131,6 +1168,18 @@ async function deleteMessageRow(token, id){
   if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte radera ("+r.status+")")); }
   return true;
 }
+async function toggleReactionRow(token, messageId, emoji){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/rpc/toggle_reaction", {method:"POST", headers:{...dataHeaders(token)}, body: JSON.stringify({ p_message: messageId, p_emoji: emoji })});
+  if(!r.ok){ let d={}; try{ d=await r.json(); }catch(e){} throw new Error(d.message || ("Kunde inte reagera ("+r.status+")")); }
+  return true;
+}
+const readsBase = SUPABASE_URL + "/rest/v1/chat_reads";
+async function markRead(token, peerId){
+  try{ await fetch(readsBase + "?on_conflict=user_id,peer_id", {method:"POST", headers:{...dataHeaders(token), Prefer:"resolution=merge-duplicates,return=minimal"}, body: JSON.stringify([{ peer_id: peerId, last_read_at: new Date().toISOString() }])}); }catch(e){}
+}
+async function fetchPeerRead(token, peerId, me){
+  try{ const r=await fetch(readsBase + "?user_id=eq."+encodeURIComponent(peerId)+"&peer_id=eq."+encodeURIComponent(me)+"&select=last_read_at", {headers: dataHeaders(token)}); if(!r.ok) return null; const j=await r.json(); return (j&&j[0]&&j[0].last_read_at)||null; }catch(e){ return null; }
+}
 const CHAT_BUCKET = "chat-files";
 async function uploadChatFile(token, file){
   const safe = (file.name||"fil").replace(/[^a-zA-Z0-9._-]/g,"_").slice(-60);
@@ -1148,6 +1197,9 @@ function attachPreview(m){
   if(!a) return m.body||"";
   if(a.type==="image") return "📷 Bild";
   if(a.type==="location") return "📍 Plats";
+  if(a.type==="audio") return "🎤 Röstmeddelande";
+  if(a.type==="ref") return "🔗 " + (a.title||"Delad post");
+  if(a.type==="reply") return m.body||"💬 Svar";
   return "📎 " + (a.name||"Fil");
 }
 function fmtBytes(n){ if(!n&&n!==0) return ""; if(n<1024) return n+" B"; if(n<1048576) return (n/1024).toFixed(0)+" kB"; return (n/1048576).toFixed(1)+" MB"; }
@@ -1634,7 +1686,7 @@ function CommandPalette({entries, stations, alarms, onPost, onStation, onLarm, o
     </div>
   );
 }
-function LarmView({alarms, onSave, onDelete}){
+function LarmView({alarms, onSave, onDelete, onShare}){
   const [q,setQ]=useState("");
   const [form,setForm]=useState(null);
   const [busy,setBusy]=useState(false);
@@ -1676,6 +1728,7 @@ function LarmView({alarms, onSave, onDelete}){
                 <span className="larm-code">{a.code||"—"}</span>
                 {a.system && <span className="larm-sys">{a.system}</span>}
                 <span className="larm-acts">
+                  {onShare && <button className="ibtn" title="Dela i chatten" onClick={()=>onShare(a)}>{Ico.users}</button>}
                   <button className="ibtn" title="Redigera" onClick={()=>setForm(a)}>{Ico.edit}</button>
                   <button className="ibtn" title="Ta bort" onClick={()=>{ if(confirm("Ta bort larmkod "+(a.code||"")+"?")) onDelete(a.id); }}>{Ico.trash}</button>
                 </span>
@@ -1746,7 +1799,10 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
   }
   useEffect(()=>{ pollUnread(); const iv=setInterval(pollUnread,15000); return ()=>clearInterval(iv); },[uid,token]);
   function markConvSeen(conv){ seenRef.current[conv]=new Date().toISOString(); saveSeen(); setUnreadMap(m=>{ const c={...m}; delete c[conv]; return c; }); }
-  const totalUnread=Object.keys(unreadMap).reduce((s,k)=>s+(unreadMap[k]||0),0);
+  function markAllSeen(){ const now=new Date().toISOString(); Object.keys(unreadMap||{}).forEach(k=>{ seenRef.current[k]=now; }); seenRef.current["team"]=now; saveSeen(); setUnreadMap({}); }
+  const [muted,setMuted]=useState(function(){ try{ return JSON.parse(localStorage.getItem("scada-muted-"+(uid||user))||"[]"); }catch(e){ return []; } });
+  function toggleMute(id){ setMuted(prev=>{ const s=prev.indexOf(id)>=0?prev.filter(x=>x!==id):[...prev,id]; try{ localStorage.setItem("scada-muted-"+(uid||user), JSON.stringify(s)); }catch(e){} return s; }); }
+  const totalUnread=Object.keys(unreadMap).reduce((s,k)=> muted.indexOf(k)>=0?s:s+(unreadMap[k]||0),0);
 
   const deepRef=useRef(getDeepLinkPost());
   useEffect(()=>{ try{ if(new URL(window.location.href).searchParams.get("chat")){ setActiveView("chatt"); history.replaceState(null,"",window.location.pathname); } }catch(e){} },[]);
@@ -2101,9 +2157,9 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
             onTag={t=>{toggleTag(t);setActiveView("bibliotek");}}
             onOpen={openDetail} loadExamples={loadExamples} onOpenLarm={()=>setActiveView("larm")} alarmCount={alarms.length} />
         ) : activeView==="chatt" ? (
-          <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} onOpenRef={openRef} openConv={chatTarget} />
+          <ChatView token={token} uid={uid} name={name} user={user} display={display} unreadMap={unreadMap} onSeen={markConvSeen} onSeenAll={markAllSeen} mutedSet={muted} onToggleMute={toggleMute} onOpenRef={openRef} openTarget={chatTarget} />
         ) : activeView==="larm" ? (
-          <LarmView alarms={alarms} onSave={saveAlarm} onDelete={deleteAlarm} />
+          <LarmView alarms={alarms} onSave={saveAlarm} onDelete={deleteAlarm} onShare={a=>setSharing({kind:"alarm", id:a.id, title:(a.code?a.code+" – ":"")+(a.title||"Larmkod")})} />
         ) : (
           <>
             <div className="page-head">
@@ -2191,6 +2247,7 @@ function KB({token, user, name, uid, isAdmin, onName, theme, onToggleTheme, bigT
                 </div>
                 <div className="station-head-actions">
                   <button className="foot-mini" onClick={()=>takeStationOffline(activeStation)}>{Ico.down} Ta hela stationen offline</button>
+                  <button className="foot-mini" onClick={()=>setSharing({kind:"station", id:activeStation, title:activeStation})}>{Ico.users} Dela i chatten</button>
                   <button className="foot-mini" onClick={()=>exportEntriesPDF(inSt, activeStation)}>{Ico.report} PDF</button>
                   <button className="foot-mini" onClick={()=>setActiveStation("Alla")}>{Ico.x} Stäng</button>
                 </div>
@@ -2691,7 +2748,7 @@ function rtConnect({ topic, token, onInsert, onBroadcast, onJoin }){
     sendTyping:function(meta){ if(joined) push("broadcast",{ type:"broadcast", event:"typing", payload: meta }); }
   };
 }
-function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpenRef, openConv}){
+function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onSeenAll, mutedSet=[], onToggleMute, onOpenRef, openTarget, posts=[]}){
   const [members,setMembers]=useState([]);
   const mentionNames=useMemo(()=>[...members.map(x=>x.name||x.email||""), display||""].filter(Boolean),[members,display]);
   const mentionHits=mention===null?[]:members.filter(x=>{ const n=(x.name||x.email||"").toLowerCase(); return n && n.indexOf(mention)>=0; }).slice(0,6);
@@ -2700,10 +2757,44 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   const [text,setText]=useState("");
   const [mention,setMention]=useState(null);
   const [replyTo,setReplyTo]=useState(null);
+  const [hashQ,setHashQ]=useState(null);
+  const [pendingRefs,setPendingRefs]=useState([]);
+  const hashHits=hashQ===null?[]:posts.filter(p=>((p.title||"")+" "+(p.station||"")).toLowerCase().indexOf(hashQ)>=0).slice(0,6);
+  function pickHash(p){ setText(t=>t.replace(/#([\wåäöÅÄÖ0-9 \-]*)$/, "")); setHashQ(null); setPendingRefs(a=> a.some(x=>x.id===p.id)?a:[...a,p]); }
   const [editingMsg,setEditingMsg]=useState(null);
+  const [lightbox,setLightbox]=useState(null);
+  const [msgQ,setMsgQ]=useState("");
+  const [searchOn,setSearchOn]=useState(false);
+  const [reactPick,setReactPick]=useState(null);
+  const REACTIONS=["👍","✅","👀","❤️","🙏","😄"];
+  const ACK="__ack__";
+  const [peerRead,setPeerRead]=useState(null);
+  async function toggleReaction(m, emoji){
+    setReactPick(null);
+    setMsgs(x=>x.map(z=>{
+      if(z.id!==m.id) return z;
+      const r=JSON.parse(JSON.stringify(z.reactions||{})); const arr=r[emoji]||[];
+      if(arr.indexOf(uid)>=0){ r[emoji]=arr.filter(u=>u!==uid); if(!r[emoji].length) delete r[emoji]; }
+      else { r[emoji]=[...arr, uid]; }
+      return {...z, reactions:r};
+    }));
+    try{ await toggleReactionRow(token, m.id, emoji); }catch(e){ /* poll reconciles */ }
+  }
+  const [selMode,setSelMode]=useState(false);
+  const [sel,setSel]=useState(()=>new Set());
+  function toggleSel(id){ setSel(prev=>{ const s=new Set(prev); s.has(id)?s.delete(id):s.add(id); return s; }); }
+  function exitSel(){ setSelMode(false); setSel(new Set()); }
+  async function deleteSelected(){
+    const ids=Array.from(sel); if(!ids.length) return;
+    if(!window.confirm("Radera "+ids.length+" meddelande"+(ids.length>1?"n":"")+"?")) return;
+    try{ await Promise.all(ids.map(id=>deleteMessageRow(token,id).catch(()=>null))); setMsgs(x=>x.filter(z=>ids.indexOf(z.id)<0)); }
+    catch(e){ alert(e.message); }
+    exitSel();
+  }
   function onComposeChange(v){
     setText(v);
     const mm=v.match(/@([\wåäöÅÄÖ]*)$/); setMention(mm?mm[1].toLowerCase():null);
+    const hm=v.match(/#([\wåäöÅÄÖ0-9 \-]{0,40})$/); setHashQ(hm?hm[1].toLowerCase():null);
     const nowt=Date.now();
     if(rtRef.current && v && nowt-lastTyping.current>1800){ lastTyping.current=nowt; rtRef.current.sendTyping({ from:uid, to:(conv==="team"?null:conv), name:(name||user||"") }); }
   }
@@ -2712,6 +2803,45 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   const [sending,setSending]=useState(false);
   const [attaching,setAttaching]=useState(false);
   const [attachMenu,setAttachMenu]=useState(false);
+  const [recording,setRecording]=useState(false);
+  const [recSecs,setRecSecs]=useState(0);
+  const recRef=useRef(null), recChunks=useRef([]), recTimer=useRef(null), recStream=useRef(null);
+  function recSupported(){ return typeof window!=="undefined" && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder; }
+  function stopRecStream(){ if(recStream.current){ try{ recStream.current.getTracks().forEach(t=>t.stop()); }catch(e){} recStream.current=null; } clearInterval(recTimer.current); }
+  async function startRec(){
+    setAttachMenu(false);
+    if(!recSupported()){ alert("Inspelning stöds inte i denna webbläsare. Lägg appen på hemskärmen och försök därifrån."); return; }
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      recStream.current=stream; recChunks.current=[];
+      let mime=""; ["audio/mp4","audio/webm","audio/ogg"].some(t=>{ try{ if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t)){ mime=t; return true; } }catch(e){} return false; });
+      const mr=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+      recRef.current=mr;
+      mr.ondataavailable=e=>{ if(e.data&&e.data.size) recChunks.current.push(e.data); };
+      mr.start();
+      setRecording(true); setRecSecs(0);
+      recTimer.current=setInterval(()=>setRecSecs(s=>s+1),1000);
+    }catch(err){ alert("Mikrofonen nekades: "+(err.message||err)); stopRecStream(); }
+  }
+  function cancelRec(){ const mr=recRef.current; if(mr&&mr.state!=="inactive"){ mr.onstop=null; try{ mr.stop(); }catch(e){} } stopRecStream(); setRecording(false); setRecSecs(0); recChunks.current=[]; }
+  function finishRec(){
+    const mr=recRef.current; const secs=recSecs;
+    if(!mr){ setRecording(false); return; }
+    mr.onstop=async()=>{
+      stopRecStream(); setRecording(false);
+      const type=(recChunks.current[0]&&recChunks.current[0].type)||"audio/mp4";
+      const blob=new Blob(recChunks.current,{type}); recChunks.current=[];
+      if(!blob.size||secs<1){ setRecSecs(0); return; }
+      const ext=type.indexOf("webm")>=0?"webm":type.indexOf("ogg")>=0?"ogg":"m4a";
+      const file=new File([blob],"rost-"+Date.now()+"."+ext,{type});
+      setAttaching(true);
+      try{ const url=await uploadChatFile(token,file); await sendAttachment({type:"audio", url, name:file.name, size:blob.size, dur:secs}); }
+      catch(err){ alert(err.message||"Kunde inte ladda upp rösten"); }
+      setAttaching(false); setRecSecs(0);
+    };
+    try{ mr.stop(); }catch(e){ stopRecStream(); setRecording(false); }
+  }
+  useEffect(()=>{ return ()=>{ try{ cancelRec(); }catch(e){} }; },[]);
   const imgInputRef=useRef(null);
   const fileInputRef=useRef(null);
   const [search,setSearch]=useState("");
@@ -2735,12 +2865,17 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
     return ()=>{ stop=true; clearInterval(iv); };
   },[token, uid]);
   useEffect(()=>{
-    let stop=false; setLoading(true);
-    async function tick(){ try{ const m=await fetchMessages(token, uid, conv); if(!stop){ setMsgs(m); if(onSeen) onSeen(conv); } }catch(e){} if(!stop) setLoading(false); }
+    let stop=false; setLoading(true); setPeerRead(null);
+    async function tick(){
+      try{ const m=await fetchMessages(token, uid, conv); if(!stop){ setMsgs(m); if(onSeen) onSeen(conv); } }catch(e){}
+      if(conv!=="team"){ markRead(token, conv); try{ const pr=await fetchPeerRead(token, conv, uid); if(!stop) setPeerRead(pr); }catch(e){} }
+      if(!stop) setLoading(false);
+    }
     tick(); const iv=setInterval(tick, 4000);
     return ()=>{ stop=true; clearInterval(iv); };
   },[conv, token, uid]);
-  useEffect(()=>{ if(openConv&&openConv.id){ setConv(openConv.id); setMobileThread(true); if(openConv.id!=="team") rememberConv(openConv.id); } },[openConv]);
+  useEffect(()=>{ if(openTarget&&openTarget.id){ setConv(openTarget.id); setMobileThread(true); if(openTarget.id!=="team") rememberConv(openTarget.id); } },[openTarget]);
+  useEffect(()=>{ setSelMode(false); setSel(new Set()); },[conv]);
   useEffect(()=>{ if(endRef.current) endRef.current.scrollIntoView(); },[msgs.length, mobileThread, conv]);
   useEffect(()=>{ let stop=false; (async()=>{
     try{ const r=await fetch(SUPABASE_URL+"/rest/v1/profiles?id=eq."+encodeURIComponent(uid)+"&select=org_id", { headers:{ apikey:SUPABASE_KEY, Authorization:"Bearer "+token } }); const j=await r.json(); if(!stop && j&&j[0]) setOrgId(j[0].org_id||null); }catch(e){}
@@ -2781,6 +2916,8 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   function initials(id){ const s=labelFor(id); return (s||"?").slice(0,2).toUpperCase(); }
   function avStyle(id){ const s=labelFor(id); let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; const hh=h%360; return {background:"hsla("+hh+",60%,50%,.18)",color:"hsl("+hh+",60%,60%)"}; }
   function nameForSender(m){ const mem=memberById(m.sender_id); return (mem&&memberLabel(mem)) || m.sender_name || "medlem"; }
+  function whoName(id2){ if(id2===uid) return "Du"; const mem=memberById(id2); return (mem&&memberLabel(mem))||"någon"; }
+  function fmtDur(s){ s=Math.round(s||0); const m=Math.floor(s/60); return m+":"+String(s%60).padStart(2,"0"); }
   function fmtDay(iso){ if(!iso) return ""; const d=new Date(iso); const t=new Date(); const y=new Date(); y.setDate(t.getDate()-1); const ds=d.toDateString(); if(ds===t.toDateString()) return "Idag"; if(ds===y.toDateString()) return "Igår"; return d.toLocaleDateString("sv-SE",{day:"numeric",month:"long"}); }
   function fmtConvTime(iso){ if(!iso) return ""; const d=new Date(iso); const t=new Date(); const y=new Date(); y.setDate(t.getDate()-1); const ds=d.toDateString(); if(ds===t.toDateString()) return fmtTime(iso); if(ds===y.toDateString()) return "Igår"; try{ return d.toLocaleDateString("sv-SE",{day:"numeric",month:"numeric"}); }catch(e){ return ""; } }
 
@@ -2808,11 +2945,14 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
       catch(e){ alert(e.message); }
       setSending(false); return;
     }
-    if((!b&&!attaching)||sending) return;
+    if((!b&&!attaching&&!pendingRefs.length)||sending) return;
     setSending(true);
     const row={ sender_id:uid, sender_name:(name||display||user), recipient_id: conv==="team"?null:conv, body:b };
-    if(replyTo) row.attachments=[{type:"reply", name:replyTo.name, snippet:replyTo.snippet}];
-    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); setReplyTo(null); rememberConv(conv); setOverview(o=>({...o,[conv]:{body:b,at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}})); }
+    const atts=[];
+    if(replyTo) atts.push({type:"reply", name:replyTo.name, snippet:replyTo.snippet});
+    pendingRefs.forEach(p=>atts.push({type:"ref", kind:"entry", id:p.id, title:p.title}));
+    if(atts.length) row.attachments=atts;
+    try{ const m=await sendMessageRow(token,row); setMsgs(x=>[...x,m]); setText(""); setReplyTo(null); setPendingRefs([]); rememberConv(conv); setOverview(o=>({...o,[conv]:{body:(b||attachPreview(m)),at:(m&&m.created_at)||new Date().toISOString(),fromMe:true}})); }
     catch(e){ alert(e.message); }
     setSending(false);
   }
@@ -2864,18 +3004,19 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
   }
 
   function ConvRow({id, sub}){
-    const ov=overview[id]; const unread=conv!==id && (unreadMap[id]||0)>0; const n=unreadMap[id]||0;
+    const isMuted=mutedSet.indexOf(id)>=0;
+    const ov=overview[id]; const unread=conv!==id && !isMuted && (unreadMap[id]||0)>0; const n=unreadMap[id]||0;
     const prev = ov ? ((ov.fromMe?"Du: ":"")+ov.body) : (sub||"");
     return (
       <button className={"conv"+(conv===id?" active":"")+(unread?" unread":"")} onClick={()=>openConv(id)}>
         <span className="conv-av" style={id==="team"?{}:avStyle(id)}>{id==="team"?Ico.users:initials(id)}{id!=="team"&&online.has(id)&&<i className="onl-dot"></i>}</span>
         <span className="conv-main">
-          <span className="conv-name">{labelFor(id)}</span>
+          <span className="conv-name">{labelFor(id)}{isMuted&&<span className="conv-mute" title="Tystad">{Ico.bell}</span>}</span>
           <span className="conv-prev">{prev}</span>
         </span>
         <span className="conv-meta">
           {ov&&ov.at?<span className="conv-time">{fmtConvTime(ov.at)}</span>:<span className="conv-time"></span>}
-          {unread?<span className="conv-badge">{n>9?"9+":n}</span>:null}
+          {unread?<span className="conv-badge">{n>9?"9+":n}</span>:(isMuted&&conv!==id&&(unreadMap[id]||0)>0?<span className="conv-dot-muted"></span>:null)}
         </span>
       </button>
     );
@@ -2886,6 +3027,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
       <div className="chat2-list">
         <div className="chat2-listhead">
           <h2 className="chat2-h">Chatt</h2>
+          {onSeenAll && Object.keys(unreadMap||{}).some(k=>mutedSet.indexOf(k)<0 && (unreadMap[k]||0)>0) && <button className="chat-allread" onClick={onSeenAll} title="Markera allt läst">{Ico.check} Allt läst</button>}
           {pushSupported() && <button className={"chat-notif"+(pushOn?" on":"")} onClick={enableNotif} disabled={pushBusy} title={pushOn?"Aviseringar på – tryck för att registrera om":"Slå på aviseringar"}>{Ico.bell}<span className="chat-notif-lbl">{pushBusy?"…":(pushOn?"På":"Avi.")}</span></button>}
         </div>
         <div className="chat-search">{Ico.search}
@@ -2914,23 +3056,39 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
       </div>
       <div className="chat2-thread">
         <div className="chat2-thhead">
-          <button className="chat-back" onClick={()=>setMobileThread(false)} title="Tillbaka">{Ico.chevL}</button>
-          <span className="conv-av" style={conv==="team"?{}:avStyle(conv)}>{conv==="team"?Ico.users:initials(conv)}{conv!=="team"&&online.has(conv)&&<i className="onl-dot"></i>}</span>
-          <div className="chat2-thtitle">
-            <span className="conv-name">{labelFor(conv)}</span>
-            <span className={"conv-prev"+(typing&&typing.conv===conv?" typing":"")}>{
-              typing&&typing.conv===conv ? (typing.name+" skriver…")
-              : conv==="team" ? ((members.length+1)+" medlemmar")
-              : (online.has(conv) ? "online" : ((memberById(conv)&&memberById(conv).email)||"Privat konversation"))
-            }</span>
-          </div>
+          {selMode ? <>
+            <button className="chat-back" onClick={exitSel} title="Klar">{Ico.x}</button>
+            <div className="chat2-thtitle"><span className="conv-name">{sel.size} markerade</span><span className="conv-prev">Välj egna meddelanden att radera</span></div>
+            <button className="th-del" disabled={sel.size===0} onClick={deleteSelected} title="Radera markerade">{Ico.trash} Radera</button>
+          </> : <>
+            <button className="chat-back" onClick={()=>setMobileThread(false)} title="Tillbaka">{Ico.chevL}</button>
+            <span className="conv-av" style={conv==="team"?{}:avStyle(conv)}>{conv==="team"?Ico.users:initials(conv)}{conv!=="team"&&online.has(conv)&&<i className="onl-dot"></i>}</span>
+            <div className="chat2-thtitle">
+              <span className="conv-name">{labelFor(conv)}</span>
+              <span className={"conv-prev"+(typing&&typing.conv===conv?" typing":"")}>{
+                typing&&typing.conv===conv ? (typing.name+" skriver…")
+                : conv==="team" ? ((members.length+1)+" medlemmar")
+                : (online.has(conv) ? "online" : ((memberById(conv)&&memberById(conv).email)||"Privat konversation"))
+              }</span>
+            </div>
+            {onToggleMute && <button className={"th-sel"+(mutedSet.indexOf(conv)>=0?" on":"")} onClick={()=>onToggleMute(conv)} title={mutedSet.indexOf(conv)>=0?"Sluta tysta":"Tysta konversation"}>{Ico.bell}</button>}
+            {msgs.length>0 && <button className={"th-sel"+(searchOn?" on":"")} onClick={()=>{ setSearchOn(v=>!v); setMsgQ(""); }} title="Sök i konversationen">{Ico.search}</button>}
+            {msgs.length>0 && <button className="th-sel" onClick={()=>setSelMode(true)} title="Markera meddelanden">{Ico.check}</button>}
+          </>}
         </div>
+        {searchOn && !selMode && <div className="chat-msgsearch">{Ico.search}
+          <input autoFocus value={msgQ} onChange={e=>setMsgQ(e.target.value)} placeholder={"Sök i "+labelFor(conv)+"…"} />
+          {msgQ && <button className="chat-search-x" onClick={()=>setMsgQ("")}>{Ico.x}</button>}
+        </div>}
         <div className="chat-msgs">
           {loading && msgs.length===0 ? <div className="chat-empty">Laddar meddelanden…</div>
            : msgs.length===0 ? <div className="chat-empty">{conv==="team"?"Inga meddelanden i teamet än. Skriv det första.":"Inga meddelanden än. Säg hej till "+labelFor(conv)+"."}</div>
            : (function(){
                const out=[]; let lastDay=null, lastSender=null;
-               msgs.forEach(m=>{
+               const q=(searchOn&&msgQ.trim())?msgQ.trim().toLowerCase():"";
+               const list=q?msgs.filter(m=>(((m.body||"")+" "+(m.attachments||[]).map(a=>a.title||a.name||"").join(" ")).toLowerCase().indexOf(q)>=0)):msgs;
+               if(q&&list.length===0) return [<div key="nohit" className="chat-empty">Inga träffar på "{msgQ}".</div>];
+               list.forEach(m=>{
                  const day=(m.created_at||"").slice(0,10);
                  let newDay=false;
                  if(day!==lastDay){ out.push(<div key={"d"+m.id} className="chat-day"><span>{fmtDay(m.created_at)}</span></div>); lastDay=day; lastSender=null; newDay=true; }
@@ -2939,24 +3097,33 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
                  const showName=!mine && conv==="team" && !grouped;
                  lastSender=m.sender_id;
                  out.push(
-                   <div key={m.id} className={"bubble-row"+(mine?" me":"")+(grouped?" grp":"")}>
+                   <div key={m.id} className={"bubble-row"+(mine?" me":"")+(grouped?" grp":"")+(selMode?" selmode":"")+(selMode&&sel.has(m.id)?" selected":"")} onClick={selMode&&mine?()=>toggleSel(m.id):undefined}>
+                     {selMode && <span className={"sel-check"+(sel.has(m.id)?" on":"")+(mine?"":" disabled")}>{sel.has(m.id)?Ico.check:""}</span>}
                      <div className={"bubble"+(mine?" me":"")}>
                        {showName && <div className="bubble-name">{nameForSender(m)}</div>}
                        {(m.attachments||[]).map((a,ai)=>{
                          if(a.type==="reply") return <div key={ai} className="att-reply"><b>{a.name}</b><span>{a.snippet}</span></div>;
-                         if(a.type==="ref") return <button key={ai} className="att-ref" onClick={()=>onOpenRef&&onOpenRef(a.kind,a.id)}>{a.kind==="alarm"?Ico.bell:a.kind==="station"?Ico.pin:Ico.note}<span><b>{a.title||"Post"}</b><small>{a.kind==="alarm"?"Larmkod":a.kind==="station"?"Station":"Kunskapspost"}</small></span></button>;
-                         if(a.type==="image") return <a key={ai} href={a.url} target="_blank" rel="noopener" className="att-img"><img src={a.url} alt={a.name||"bild"} loading="lazy" /></a>;
+                         if(a.type==="ref") return <button key={ai} className="att-ref" onClick={()=>!selMode&&onOpenRef&&onOpenRef(a.kind,a.id)}>{a.kind==="alarm"?Ico.bell:a.kind==="station"?Ico.pin:Ico.note}<span><b>{a.title||"Post"}</b><small>{a.kind==="alarm"?"Larmkod":a.kind==="station"?"Station":"Kunskapspost"}</small></span></button>;
+                         if(a.type==="image") return <button key={ai} className="att-img" onClick={(e)=>{ e.stopPropagation(); if(!selMode) setLightbox(a.url); }}><img src={a.url} alt={a.name||"bild"} loading="lazy" /></button>;
                          if(a.type==="location") return <a key={ai} href={"https://www.google.com/maps?q="+a.lat+","+a.lng} target="_blank" rel="noopener" className="att-loc">{Ico.pin}<span><b>Delad plats</b><small>{a.lat}, {a.lng}</small></span></a>;
+                         if(a.type==="audio") return <div key={ai} className="att-audio"><audio controls preload="metadata" src={a.url}></audio>{a.dur?<span className="att-audio-dur">🎤 {fmtDur(a.dur)}</span>:null}</div>;
                          return <a key={ai} href={a.url} target="_blank" rel="noopener" download={a.name} className="att-file">{Ico.file2||Ico.report}<span><b>{a.name||"Fil"}</b><small>{fmtBytes(a.size)}</small></span></a>;
                        })}
                        {m.body && <div className="bubble-body">{renderMentions(m.body, mentionNames)}</div>}
-                       <div className="bubble-time">{fmtTime(m.created_at)}{m.edited_at && <span className="edited"> · ändrad</span>}</div>
+                       <div className="bubble-time">{fmtTime(m.created_at)}{m.edited_at && <span className="edited"> · ändrad</span>}{mine && conv!=="team" && <span className={"rcpt"+(peerRead&&(m.created_at||"")<=peerRead?" read":"")}>{peerRead&&(m.created_at||"")<=peerRead?" ✓✓":" ✓"}</span>}</div>
+                       {m.reactions && Object.keys(m.reactions).filter(e=>e!=="ack").length>0 && <div className="rx-row">
+                         {Object.keys(m.reactions).filter(e=>e!=="ack").map(em=> (m.reactions[em]&&m.reactions[em].length)?<button key={em} className={"rx-chip"+(m.reactions[em].indexOf(uid)>=0?" mine":"")} onClick={(e)=>{ e.stopPropagation(); if(!selMode) toggleReaction(m, em); }}>{em} {m.reactions[em].length}</button>:null)}
+                       </div>}
+                       {m.reactions && m.reactions.ack && m.reactions.ack.length>0 && <div className={"ack-row"+(m.reactions.ack.indexOf(uid)>=0?" mine":"")}>{Ico.check} Kvitterad av {m.reactions.ack.map(u=>whoName(u)).join(", ")}</div>}
                      </div>
-                     <div className="msg-actions">
+                     {!selMode && <div className="msg-actions">
+                       <button className="msg-act rx-add" title="Reagera" onClick={()=>setReactPick(reactPick===m.id?null:m.id)}><span>☺</span></button>
+                       {!mine && <button className={"msg-act"+(m.reactions&&m.reactions.ack&&m.reactions.ack.indexOf(uid)>=0?" acked":"")} title="Kvittera" onClick={()=>toggleReaction(m, "ack")}>{Ico.check}</button>}
                        <button className="msg-act" title="Svara" onClick={()=>{ setEditingMsg(null); setReplyTo({mid:m.id, name:nameForSender(m), snippet:((m.body||attachPreview(m)||"").slice(0,90))}); }}>{Ico.undo}</button>
                        {mine && m.body && <button className="msg-act" title="Redigera" onClick={()=>startEdit(m)}>{Ico.edit}</button>}
                        {mine && <button className="msg-act danger" title="Radera" onClick={()=>deleteMsg(m)}>{Ico.trash}</button>}
-                     </div>
+                       {reactPick===m.id && <div className="rx-pick">{REACTIONS.map(em=><button key={em} onClick={()=>toggleReaction(m, em)}>{em}</button>)}</div>}
+                     </div>}
                    </div>
                  );
                });
@@ -2972,7 +3139,17 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
           <div className="reply-q"><b>Svar till {replyTo.name}</b><span>{replyTo.snippet}</span></div>
           <button className="reply-x" onClick={()=>setReplyTo(null)} title="Avbryt">{Ico.x}</button>
         </div>}
-        <div className="chat-input">
+        {pendingRefs.length>0 && <div className="ref-bar">
+          {pendingRefs.map((p,i)=><span key={i} className="ref-chip">{Ico.note}<span className="ref-chip-t">{p.title}</span><button onClick={()=>setPendingRefs(a=>a.filter((_,j)=>j!==i))} title="Ta bort">{Ico.x}</button></span>)}
+        </div>}
+        {recording && <div className="rec-bar">
+          <button className="rec-btn cancel" onClick={cancelRec} title="Avbryt">{Ico.trash}</button>
+          <span className="rec-dot"></span>
+          <span className="rec-time">{fmtDur(recSecs)}</span>
+          <span className="rec-lbl">Spelar in…</span>
+          <button className="rec-btn send" onClick={finishRec} title="Skicka">{Ico.send}</button>
+        </div>}
+        <div className="chat-input" style={recording?{display:"none"}:undefined}>
           <input ref={imgInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>onPickFile(e,true)} />
           <input ref={fileInputRef} type="file" style={{display:"none"}} onChange={e=>onPickFile(e,false)} />
           <div className="att-wrap">
@@ -2981,6 +3158,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
               <button onClick={()=>{ setAttachMenu(false); imgInputRef.current&&imgInputRef.current.click(); }}>{Ico.image||Ico.box} Bild</button>
               <button onClick={()=>{ setAttachMenu(false); fileInputRef.current&&fileInputRef.current.click(); }}>{Ico.file2||Ico.report} Fil</button>
               <button onClick={shareLocation}>{Ico.pin} Plats</button>
+              {recSupported() && <button onClick={startRec}><span style={{fontSize:"16px"}}>🎙️</span> Röstmeddelande</button>}
             </div>}
           </div>
           <textarea value={text} onChange={e=>onComposeChange(e.target.value)} rows={1} placeholder={attaching?"Laddar upp…":("Skriv till "+labelFor(conv)+"…")}
@@ -2988,9 +3166,16 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onOpen
           {mention!==null && mentionHits.length>0 && <div className="mention-menu">
             {mentionHits.map(x=><button key={x.id} onClick={()=>pickMention(x.name||x.email||"")}>{Ico.users}<span>{x.name||x.email}</span></button>)}
           </div>}
-          <button className="chat-send" disabled={sending||!text.trim()} onClick={send} title="Skicka">{Ico.send}</button>
+          {hashQ!==null && hashHits.length>0 && <div className="mention-menu">
+            {hashHits.map(p=><button key={p.id} onClick={()=>pickHash(p)}>{Ico.note}<span>{p.title}{p.station?" · "+p.station:""}</span></button>)}
+          </div>}
+          <button className="chat-send" disabled={sending||(!text.trim()&&!pendingRefs.length)} onClick={send} title="Skicka">{Ico.send}</button>
         </div>
       </div>
+      {lightbox && <div className="lightbox" onClick={()=>setLightbox(null)}>
+        <button className="lightbox-x" onClick={()=>setLightbox(null)} title="Stäng">{Ico.x}</button>
+        <img src={lightbox} alt="" onClick={e=>e.stopPropagation()} />
+      </div>}
     </div>
   );
 }
