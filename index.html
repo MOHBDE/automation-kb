@@ -675,6 +675,15 @@
   .typing-bubble .tdot:nth-child(2){animation-delay:.18s;}
   .typing-bubble .tdot:nth-child(3){animation-delay:.36s;}
   @keyframes tbnce{0%,60%,100%{transform:translateY(0);opacity:.45;}30%{transform:translateY(-4px);opacity:1;}}
+  .att-audio{display:flex;flex-direction:column;gap:5px;margin-bottom:5px;max-width:260px;}
+  .att-audio audio{width:240px;max-width:100%;height:38px;}
+  .att-audio-play{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:20px;border:1px solid var(--line);background:var(--inset);color:var(--txt);font-family:var(--sans);font-size:13.5px;font-weight:500;cursor:pointer;}
+  .att-audio-play:hover{border-color:var(--accent);color:var(--accent);}
+  .att-audio-play:disabled{opacity:.6;cursor:default;}
+  .att-audio-meta{display:flex;align-items:center;gap:12px;}
+  .att-audio-dur{font-size:12px;color:var(--dim);}
+  .att-audio-fallback{font-size:12px;color:var(--accent);text-decoration:underline;}
+  .bubble.me .att-audio-play{background:rgba(0,0,0,.18);border-color:rgba(0,0,0,.18);color:#fff;}
   @media(max-width:860px){
     .chat2{grid-template-columns:1fr;height:calc(100dvh - 150px);border:none;border-radius:0;background:none;box-shadow:none;}
     .chat2-list{border-right:none;background:none;}
@@ -922,7 +931,7 @@
 <script type="text/babel">
 const { useState, useEffect, useMemo, useRef } = React;
 
-const APP_VERSION = "1.39.0";
+const APP_VERSION = "1.39.1";
 const SYSTEMS=["Ignition","iFIX"];
 const SYS_COLOR={"Ignition":"#f59e0b","iFIX":"#38bdf8"};
 function colorForSys(name){
@@ -2717,6 +2726,32 @@ function CompactRow({entry,mine=true,onOpen,onPin}){
     </div>
   );
 }
+function AudioMsg({ url, durLabel }){
+  const [src,setSrc]=useState(null);
+  const [err,setErr]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const aRef=useRef(null);
+  async function load(play){
+    if(loading||src) return;
+    setErr(false); setLoading(true);
+    try{
+      const r=await fetch(url); if(!r.ok) throw new Error("http "+r.status);
+      const b=await r.blob(); const o=URL.createObjectURL(b); setSrc(o);
+      if(play) setTimeout(()=>{ try{ aRef.current&&aRef.current.play&&aRef.current.play(); }catch(e){} },80);
+    }catch(e){ setErr(true); }
+    setLoading(false);
+  }
+  useEffect(()=>()=>{ if(src){ try{ URL.revokeObjectURL(src); }catch(e){} } },[src]);
+  return <div className="att-audio">
+    {src
+      ? <audio ref={aRef} controls preload="auto" src={src} onError={()=>setErr(true)}></audio>
+      : <button type="button" className="att-audio-play" onClick={(e)=>{ e.stopPropagation(); load(true); }} disabled={loading}>{loading?"Laddar…":"▶︎ Spela röstmeddelande"}</button>}
+    <div className="att-audio-meta">
+      {durLabel?<span className="att-audio-dur">🎤 {durLabel}</span>:null}
+      {err && <a href={url} target="_blank" rel="noopener" className="att-audio-fallback" onClick={(e)=>e.stopPropagation()}>Öppna i spelaren</a>}
+    </div>
+  </div>;
+}
 function rtConnect({ topic, token, onInsert, onBroadcast, onJoin }){
   const url = SUPABASE_URL.replace(/^http/,"ws") + "/realtime/v1/websocket?apikey=" + encodeURIComponent(SUPABASE_KEY) + "&vsn=1.0.0";
   let ws=null, hb=null, refN=1, joined=false, closed=false, reconnTimer=null;
@@ -3106,7 +3141,7 @@ function ChatView({token, uid, name, user, display, unreadMap={}, onSeen, onSeen
                          if(a.type==="ref") return <button key={ai} className="att-ref" onClick={()=>!selMode&&onOpenRef&&onOpenRef(a.kind,a.id)}>{a.kind==="alarm"?Ico.bell:a.kind==="station"?Ico.pin:Ico.note}<span><b>{a.title||"Post"}</b><small>{a.kind==="alarm"?"Larmkod":a.kind==="station"?"Station":"Kunskapspost"}</small></span></button>;
                          if(a.type==="image") return <button key={ai} className="att-img" onClick={(e)=>{ e.stopPropagation(); if(!selMode) setLightbox(a.url); }}><img src={a.url} alt={a.name||"bild"} loading="lazy" /></button>;
                          if(a.type==="location") return <a key={ai} href={"https://www.google.com/maps?q="+a.lat+","+a.lng} target="_blank" rel="noopener" className="att-loc">{Ico.pin}<span><b>Delad plats</b><small>{a.lat}, {a.lng}</small></span></a>;
-                         if(a.type==="audio") return <div key={ai} className="att-audio"><audio controls preload="metadata" src={a.url}></audio>{a.dur?<span className="att-audio-dur">🎤 {fmtDur(a.dur)}</span>:null}</div>;
+                         if(a.type==="audio") return <AudioMsg key={ai} url={a.url} durLabel={a.dur?fmtDur(a.dur):""} />;
                          return <a key={ai} href={a.url} target="_blank" rel="noopener" download={a.name} className="att-file">{Ico.file2||Ico.report}<span><b>{a.name||"Fil"}</b><small>{fmtBytes(a.size)}</small></span></a>;
                        })}
                        {m.body && <div className="bubble-body">{renderMentions(m.body, mentionNames)}</div>}

@@ -3,7 +3,7 @@
    - Statiska resurser (React, Babel, highlight.js, typsnitt): cache-first
    - Supabase (data + bilder): alltid nätverk, aldrig cache
 */
-const CACHE = 'scada-kb-tjanst-v24';
+const CACHE = 'scada-kb-tjanst-v25';
 const MEDIA = 'scada-media';
 const ASSETS = [
   './',
